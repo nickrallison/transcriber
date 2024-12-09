@@ -1,0 +1,9 @@
+[package]
+name = "transcriber"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+which = "4.0"
+tempfile = "3.2"
+url = "2.5.4"
