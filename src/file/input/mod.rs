@@ -73,7 +73,9 @@ fn parse_website(input: &str) -> Result<WebsiteType, ParseError> {
 
 #[cfg(test)]
 mod test_input_parse {
+    use rstest::rstest;
     use super::*;
+    use crate::file::FileCategory;
 
     #[test]
     fn test_parse_youtube_video() {
@@ -102,6 +104,23 @@ mod test_input_parse {
              }
          }
     }
+    #[rstest]
+    #[case("file.mp3", FileCategory::Audio)]
+    #[case("/path/to/file.mp3", FileCategory::Audio)]
+    #[case("C:\\Users\\Nick\\file.mp4", FileCategory::Video)]
+    #[case("file.pdf", FileCategory::Pdf)]
+    #[case("file.md", FileCategory::Text)]
+    #[case("file.srt", FileCategory::Srt)]
+    fn test_parse_files(#[case] input: &str, #[case] category: FileCategory) {
+        let result = parse_input(input);
+        let input_enum = result.expect("Shoud be a file");
+        let file = match input_enum {
+            InputType::File(file) => file,
+            _   => panic!("Should be a file")
+        };
+        assert_eq!(file.category(), category);
+    }
+
 
 
 }

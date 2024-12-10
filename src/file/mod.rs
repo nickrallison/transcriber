@@ -17,6 +17,20 @@ pub enum FileType {
     PathFile(PathFile)
 }
 
+impl FileType {
+    fn category(&self) -> FileCategory {
+        match self {
+            Self::StringFile(str_file) => {
+                str_file.file_type.clone()
+            },
+            Self::PathFile(path_file) => {
+                path_file.file_type.clone()
+            },
+        }
+    }
+
+}
+
 /// This is a string that is pretending to be a file.
 /// No use making a file if not necessary.
 #[derive(Clone, Debug, Hash, PartialEq)]
