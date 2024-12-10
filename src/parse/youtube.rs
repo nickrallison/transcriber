@@ -1,10 +1,9 @@
-use crate::error::ParseError;
+use crate::error::Error;
 
 use regex::Regex;
 use lazy_static::lazy_static;
 use rstest::rstest;
-
-
+use crate::parse::error::ParseError;
 
 const YOUTUBE_VIDEO_URL: &str = "https://www.youtube.com/watch?v=";
 const YOUTUBE_PLAYLIST_URL: &str = "https://www.youtube.com/playlist?list=";
@@ -23,7 +22,7 @@ pub enum YoutubeType {
     Channel(String),
 }
 
-pub fn parse_youtube(input: &str) -> Result<YoutubeType, ParseError> {
+pub fn parse_youtube(input: &str) -> Result<YoutubeType, Error> {
     if input.starts_with(YOUTUBE_VIDEO_URL) {
 	    return Ok(YoutubeType::Video(extract_video_id(input)?))
     }
@@ -33,27 +32,27 @@ pub fn parse_youtube(input: &str) -> Result<YoutubeType, ParseError> {
     if input.starts_with(YOUTUBE_CHANNEL_URL) {
         return Ok(YoutubeType::Channel(extract_channel_id(input)?))
     }
-    return Err(ParseError::YoutubeLinkInvalid(input.to_string()))
+    Err(Error::from(ParseError::YoutubeLinkInvalid(input.to_string())))
 
 }
 
-fn extract_video_id(url: &str) -> Result<String, ParseError> {
+fn extract_video_id(url: &str) -> Result<String, Error> {
     match YOUTUBE_VIDEO_REGEX.captures(&url) {
         Some(caps) => Ok(caps["id"].to_string()),
-        None => Err(ParseError::YoutubeRegexFail(url.to_string()))
+        None => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
     }
 }
 
-fn extract_playlist_id(url: &str) -> Result<String, ParseError> {
+fn extract_playlist_id(url: &str) -> Result<String, Error> {
     match YOUTUBE_PLAYLIST_REGEX.captures(&url) {
         Some(caps) => Ok(caps["id"].to_string()),
-        None  => Err(ParseError::YoutubeRegexFail(url.to_string()))
+        None  => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
      }
 }
-fn extract_channel_id(url: &str) -> Result<String, ParseError> {
+fn extract_channel_id(url: &str) -> Result<String, Error> {
     match YOUTUBE_CHANNEL_REGEX.captures(&url)  {
         Some(caps) => Ok(caps["id"].to_string()),
-        None   => Err(ParseError::YoutubeRegexFail(url.to_string()))
+        None   => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
       }
 }
 
@@ -126,7 +125,7 @@ mod parse_youtube_tests {
             Ok(_) => panic!("Youtube parse sShould have failed"),
             Err(e) => {
                 match e {
-                    ParseError::YoutubeLinkInvalid(_) => (),
+                    Error::Parse(ParseError::YoutubeLinkInvalid(_)) => (),
                     _ => panic!("{}", &format!("Unexpected error: {}", e))
                 }
             }

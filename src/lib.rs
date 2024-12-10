@@ -1,5 +1,14 @@
-pub(crate) mod parse;
+//! Transcribes a string into its associated contents
+//! - Handles files
+//! - Handles links
+
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_crate_level_docs)]
+#![warn(rustdoc::missing_doc_code_examples)]
+
+mod parse;
 mod error;
+mod transform;
 
 use std::path::PathBuf;
 
@@ -18,6 +27,8 @@ pub enum FileType {
 }
 
 impl FileType {
+
+    /// Grabs the file type from a file path
     fn category(&self) -> FileCategory {
         match self {
             Self::StringFile(str_file) => {
@@ -63,4 +74,14 @@ pub enum FileCategory {
 pub enum WebsiteType {
     Youtube(parse::youtube::YoutubeType),
     Article(String)
+}
+
+/// Transcribes some input into a string.
+///
+/// @param input The input to transcribe.
+///
+pub fn transcribe(input: &str) -> Result<String, crate::error::Error> {
+    let input_type: InputType = parse::parse_input(input)?;
+    let input_as_file: FileType = transform::transform_input(input_type)?;
+    todo!()
 }

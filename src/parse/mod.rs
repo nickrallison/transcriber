@@ -1,18 +1,20 @@
 pub(crate) mod youtube;
+pub(crate) mod error;
 
 use std::ffi::OsStr;
 use std::path::Path;
 use crate::{FileCategory, FileType, InputType, PathFile, WebsiteType};
-use crate::error::ParseError;
+use crate::error::Error;
 
 use lazy_static::lazy_static;
 use regex::Regex;
+use crate::parse::error::ParseError;
 
 lazy_static! {
     static ref YOUTUBE_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)").unwrap();
 }
 
-pub fn parse_input(input: &str) -> Result<InputType, ParseError> {
+pub fn parse_input(input: &str) -> Result<InputType, crate::error::Error> {
     if input.contains("http") {
         return Ok(InputType::Website(parse_website(input)?));
     }
@@ -43,11 +45,11 @@ fn get_extension(path: &Path) -> Option<FileCategory> {
     return Some(file_type);
 }
 
-fn parse_file(input: &str) -> Result<FileType, ParseError> {
+fn parse_file(input: &str) -> Result<FileType, Error> {
 
     let input_as_path = Path::new(&input);
     let file_type = match get_extension(input_as_path) {
-        None => return Err(ParseError::InvalidExtension(input.to_string())),
+        None => return Err(Error::from(ParseError::InvalidExtension(input.to_string()))),
         Some(ext) => ext
     };
     let file = FileType::PathFile(
@@ -60,7 +62,7 @@ fn parse_file(input: &str) -> Result<FileType, ParseError> {
 
 }
 
-fn parse_website(input: &str) -> Result<WebsiteType, ParseError> {
+fn parse_website(input: &str) -> Result<WebsiteType, crate::error::Error> {
 
     if YOUTUBE_REGEX.is_match(&input) {
         Ok(WebsiteType::Youtube(youtube::parse_youtube(input)?))
@@ -76,7 +78,7 @@ mod test_input_parse {
     use rstest::rstest;
     use super::*;
     use crate::FileCategory;
-
+ 
     #[test]
     fn test_parse_youtube_video() {
         let input = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
