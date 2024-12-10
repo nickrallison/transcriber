@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use tempfile::tempdir;
 use crate::error::Error;
-use crate::FileType;
+use crate::{FileCategory, FileType, StringFile};
 use crate::parse::youtube::YoutubeType;
 use crate::transform::error::TransformError;
 
@@ -62,7 +62,7 @@ fn ytdlp_download() -> Result<PathBuf, TransformError>  {
 /// Transforms YouTube enum into associated file(s)
 pub fn transform_youtube(youtube_type: YoutubeType) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
     // require yt-dlp to be installed
-    // which::which("yt-dlp")?;
+    which::which("yt-dlp")?;
 
     let files: Vec<crate::FileType> = match youtube_type {
         YoutubeType::Video(vid_id) => transform_youtube_video(vid_id)?,
@@ -75,7 +75,7 @@ pub fn transform_youtube(youtube_type: YoutubeType) -> Result<Vec<crate::FileTyp
 
 /// Grabs a YouTube video transcript with yt-dlp
 fn transform_youtube_video(vid_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
-    // debug_assert!(which::which("yt-dlp").is_ok());
+    debug_assert!(which::which("yt-dlp").is_ok());
 
     // Get a temp directory to run the command from
     let temp_dir = tempfile::tempdir()?;
@@ -107,20 +107,26 @@ fn transform_youtube_video(vid_id: String) -> Result<Vec<crate::FileType>, crate
     let mut files: Vec<FileType> = Vec::new();
     for file in srt_files {
         let file_name = file.expect("Files in glob should exist");
-        files.push(FileType::new_path(file_name).expect("Should only be able to find vtt files in temp path"));
+        let contents = std::fs::read_to_string(&file_name).expect("Files in glob should exist");
+        let string_file = StringFile {
+            file_name: file_name.file_name().expect("Should have filename").to_os_string(),
+            contents,
+            file_type: FileCategory::Srt,
+        };
+        files.push(FileType::StringFile(string_file));
     }
     Ok(files)
 }
 
 /// Grabs the transcript of each video from a playlist with yt-dlp
 fn transform_youtube_playlist(playlist_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
-    // debug_assert!(which::which("yt-dlp").is_ok());
+    debug_assert!(which::which("yt-dlp").is_ok());
     todo!()
 }
 
 /// Grabs the transcript of each video from a channel with yt-dlp
 fn transform_youtube_channel(channel_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
-    // debug_assert!(which::which("yt-dlp").is_ok());
+    debug_assert!(which::which("yt-dlp").is_ok());
     todo!()
 }
 
@@ -137,9 +143,12 @@ mod youtube_transform_tests {
         assert_eq!(result.len(), 1);
         let vid_transcript = result.first().expect("Expected a single video");
         match vid_transcript {
-            crate::FileType::PathFile(path_file) => {
-                let file_type = path_file.file_type.clone();
+            crate::FileType::StringFile(string_file) => {
+                let file_type = string_file.file_type.clone();
                 assert_eq!(file_type, crate::FileCategory::Srt);
+                let contents = &string_file.contents;
+                // println!("{}", contents);
+                assert!(contents.starts_with("WEBVTT\nKind: captions\nLanguage: en\n\n00:00:00.000 -->"));
             }
             _ => panic!("Expected a PathFile")
         }
