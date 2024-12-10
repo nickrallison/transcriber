@@ -39,6 +39,7 @@ pub enum FileCategory {
     Audio,
     Video,
     Html,
+    Pdf,
     Text,
     Srt
 }

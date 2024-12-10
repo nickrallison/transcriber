@@ -13,4 +13,7 @@ pub enum ParseError {
 
     #[error("Could not parse youtube link with regex")]
     YoutubeRegexFail(String),
+
+    #[error("The file has an invalid extension")]
+    InvalidExtension(String)
 }
