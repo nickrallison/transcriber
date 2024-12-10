@@ -2,6 +2,7 @@ use crate::file::error::ParseError;
 
 use regex::Regex;
 use lazy_static::lazy_static;
+use rstest::rstest;
 
 
 
@@ -10,9 +11,9 @@ const YOUTUBE_PLAYLIST_URL: &str = "https://www.youtube.com/playlist?list=";
 const YOUTUBE_CHANNEL_URL: &str = "https://www.youtube.com/@";
 
 lazy_static! {
-    static ref YOUTUBE_VIDEO_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:watch\?v=|embed/|v/|.+\?v=)?(?P<id>[^&=%\?].*)").unwrap();
-    static ref YOUTUBE_PLAYLIST_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:playlist\?list=|embed/|v/|.+\?list=)?(?P<id>[^&=%\?].*)").unwrap();
-    static ref YOUTUBE_CHANNEL_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:channel/|user/)?(?P<id>[^&=%\?].*)").unwrap();
+    static ref YOUTUBE_VIDEO_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:watch\?v=|embed/|v/|.+\?v=)?(?P<id>[^&=%\?]*)").unwrap();
+    static ref YOUTUBE_PLAYLIST_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:playlist\?list=|embed/|v/|.+\?list=)?(?P<id>[^&=%\?]*)").unwrap();
+    static ref YOUTUBE_CHANNEL_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:channel/|user/|@)?(?P<id>[^&=%\?]*)").unwrap();
 }
 
 pub enum YoutubeType {
@@ -58,9 +59,15 @@ fn extract_channel_id(url: &str) -> Result<String, ParseError> {
 #[cfg(test)]
 mod parse_youtube_tests {
     use super::*;
-    #[test]
-    fn youtube_video() {
-        let link = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+    #[rstest]
+    #[case("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ")]
+    #[case("https://www.youtube.com/watch?v=n43zQvMdPmE", "n43zQvMdPmE")]
+    #[case("https://www.youtube.com/watch?v=8xboFsRijUk", "8xboFsRijUk")]
+    #[case("https://www.youtube.com/watch?v=crMyNv2fdkc&list=PLUl4u3cNGP61cYB5ymvFiEbIb-wWHfaqO", "crMyNv2fdkc")]
+    #[case("https://www.youtube.com/watch?v=L3LMbpZIKhQ&list=PLB7540DEDD482705B&index=1&pp=iAQB", "L3LMbpZIKhQ")]
+    #[case("https://www.youtube.com/watch?v=CMzCH_P_SFI", "CMzCH_P_SFI")]
+    fn youtube_video(#[case] link: &str, #[case] expected_id: &str) {
         let result = parse_youtube(link);
         match result {
             Ok(_) => (),
@@ -68,14 +75,17 @@ mod parse_youtube_tests {
         }
         let youtube_type = result.unwrap();
         match youtube_type {
-            YoutubeType::Video(video_id) => assert_eq!("dQw4w9WgXcQ", video_id),
+            YoutubeType::Video(video_id) => assert_eq!(expected_id, video_id),
             YoutubeType::Playlist(_) => panic!("{}", &format!("Link parsed as playlist: {}", &link)),
             YoutubeType::Channel(_) => panic!("{}", &format!("Link parsed as channel: {}", &link)),
         }
     }
-    #[test]
-    fn youtube_playlist() {
-        let link = "https://www.youtube.com/playlist?list=PLB7540DEDD482705B";
+
+    #[rstest]
+    #[case("https://www.youtube.com/playlist?list=PLUl4u3cNGP61cYB5ymvFiEbIb-wWHfaqO", "PLUl4u3cNGP61cYB5ymvFiEbIb-wWHfaqO")]
+    #[case("https://www.youtube.com/playlist?list=PLVTclEEyY1SKFumpT86h-y6jikkEUKIAH", "PLVTclEEyY1SKFumpT86h-y6jikkEUKIAH")]
+    #[case("https://www.youtube.com/playlist?list=PLPKF63qhXeX3-E-PL08f3CKN4CPfT7nLv", "PLPKF63qhXeX3-E-PL08f3CKN4CPfT7nLv")]
+    fn youtube_playlist(#[case] link: &str, #[case] expected_id: &str) {
         let result = parse_youtube(link);
         match result {
             Ok(_) => (),
@@ -83,9 +93,28 @@ mod parse_youtube_tests {
         }
         let youtube_type = result.unwrap();
         match youtube_type {
-            YoutubeType::Playlist(playlist_id) => assert_eq!("PLB7540DEDD482705B", playlist_id),
+            YoutubeType::Playlist(playlist_id) => assert_eq!(expected_id, playlist_id),
             YoutubeType::Video(_) => panic!("{}", &format!("Link parsed as video: {}", &link)),
             YoutubeType::Channel(_) => panic!("{}", &format!("Link parsed as channel: {}", &link)),
+        }
+    }
+
+    #[rstest]
+    #[case("https://www.youtube.com/@JackChappleShow", "JackChappleShow")]
+    #[case("https://www.youtube.com/@mitocw", "mitocw")]
+    #[case("https://www.youtube.com/@aiexplained-official", "aiexplained-official")]
+    #[case("https://www.youtube.com/@AbroadinJapan", "AbroadinJapan")]
+    fn youtube_channel(#[case] link: &str, #[case] expected_id: &str) {
+        let result = parse_youtube(link);
+        match result {
+            Ok(_) => (),
+            Err(e) => panic!("{}", e)
+        }
+        let youtube_type = result.unwrap();
+        match youtube_type {
+            YoutubeType::Channel(channel_id) => assert_eq!(expected_id, channel_id),
+            YoutubeType::Video(_) => panic!("{}", &format!("Link parsed as video: {}", &link)),
+            YoutubeType::Playlist(_) => panic!("{}", &format!("Link parsed as playlist: {}", &link)),
         }
     }
 }
