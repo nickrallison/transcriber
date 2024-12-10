@@ -2,8 +2,8 @@ pub(crate) mod youtube;
 
 use std::ffi::OsStr;
 use std::path::Path;
-use crate::file::{FileCategory, FileType, InputType, PathFile, WebsiteType};
-use crate::file::error::ParseError;
+use crate::{FileCategory, FileType, InputType, PathFile, WebsiteType};
+use crate::error::ParseError;
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -75,7 +75,7 @@ fn parse_website(input: &str) -> Result<WebsiteType, ParseError> {
 mod test_input_parse {
     use rstest::rstest;
     use super::*;
-    use crate::file::FileCategory;
+    use crate::FileCategory;
 
     #[test]
     fn test_parse_youtube_video() {
@@ -120,6 +120,8 @@ mod test_input_parse {
         };
         assert_eq!(file.category(), category);
     }
+
+
 
 
 

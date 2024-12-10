@@ -1,9 +1,9 @@
-pub(crate) mod input;
+pub(crate) mod parse;
 mod error;
 
 use std::path::PathBuf;
 
-/// These are what we can classify any one input into
+/// These are what we can classify any one parse into
 #[derive(Clone, Debug, Hash, PartialEq)]
 pub enum InputType {
     Website(WebsiteType),
@@ -61,6 +61,6 @@ pub enum FileCategory {
 /// This is what we can classify any one website into
 #[derive(Clone, Debug, Hash, PartialEq)]
 pub enum WebsiteType {
-    Youtube(input::youtube::YoutubeType),
+    Youtube(parse::youtube::YoutubeType),
     Article(String)
 }
