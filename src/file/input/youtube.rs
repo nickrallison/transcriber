@@ -16,6 +16,7 @@ lazy_static! {
     static ref YOUTUBE_CHANNEL_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:channel/|user/|@)?(?P<id>[^&=%\?]*)").unwrap();
 }
 
+#[derive(Clone, Debug, Hash, PartialEq)]
 pub enum YoutubeType {
     Video(String),
     Playlist(String),
