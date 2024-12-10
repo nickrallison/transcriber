@@ -16,7 +16,6 @@ pub fn parse_input(input: &str) -> Result<InputType, ParseError> {
         return Ok(InputType::Website(parse_website(input)?));
     }
     return Ok(InputType::File(parse_file(input)?));
-
 }
 
 fn parse_file(input: &str) -> Result<FileType, ParseError> {
@@ -54,6 +53,20 @@ mod test_input_parse {
                 panic!("parse youtube video failed")
             }
         }
+    }
+
+    #[test]
+    fn test_parse_article() {
+        let input = "https://zipcpu.com/tutorial/";
+        let result = parse_website(input);
+        match result  {
+            Ok(article) => {
+                assert_eq!(article, WebsiteType::Article("https://zipcpu.com/tutorial/".to_string()));
+             }
+            Err(_)  => {
+                panic!("parse article failed")
+             }
+         }
     }
 
 
