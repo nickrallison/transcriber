@@ -1,3 +1,8 @@
+//! Youtube Management for Parsing Lib
+//! TODO: Add Documentation to crate::parse::youtube
+//! TODO: Add Tests to crate::parse::youtube
+//! TODO: Add Debug Asserts to crate::parse::youtube
+
 use crate::error::Error;
 
 use regex::Regex;

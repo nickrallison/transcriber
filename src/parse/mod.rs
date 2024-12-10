@@ -1,3 +1,8 @@
+//! Parsing
+//! TODO: Add Documentation to crate::parse
+//! TODO: Add Tests to crate::parse
+//! TODO: Add Debug Asserts to crate::parse
+
 pub(crate) mod youtube;
 pub(crate) mod error;
 
@@ -39,6 +44,7 @@ fn get_extension(path: &Path) -> Option<FileCategory> {
         Some("html") => FileCategory::Html,
 
         Some("srt") => FileCategory::Srt,
+        Some("vtt") => FileCategory::Srt,
 
         _ => return None,
     };
@@ -113,6 +119,7 @@ mod test_input_parse {
     #[case("file.pdf", FileCategory::Pdf)]
     #[case("file.md", FileCategory::Text)]
     #[case("file.srt", FileCategory::Srt)]
+    #[case("file.vtt", FileCategory::Srt)]
     fn test_parse_files(#[case] input: &str, #[case] category: FileCategory) {
         let result = parse_input(input);
         let input_enum = result.expect("Shoud be a file");

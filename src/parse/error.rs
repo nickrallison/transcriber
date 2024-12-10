@@ -1,3 +1,8 @@
+//! Errors for Parsing Lib
+//! TODO: Add Documentation to crate::parse::error
+//! TODO: Add Tests to crate::parse::error
+//! TODO: Add Debug Asserts to crate::parse::error
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
