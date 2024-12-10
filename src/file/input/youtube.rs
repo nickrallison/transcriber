@@ -19,7 +19,7 @@ lazy_static! {
 pub enum YoutubeType {
     Video(String),
     Playlist(String),
-    Channel(String)
+    Channel(String),
 }
 
 pub fn parse_youtube(input: &str) -> Result<YoutubeType, ParseError> {
@@ -115,6 +115,20 @@ mod parse_youtube_tests {
             YoutubeType::Channel(channel_id) => assert_eq!(expected_id, channel_id),
             YoutubeType::Video(_) => panic!("{}", &format!("Link parsed as video: {}", &link)),
             YoutubeType::Playlist(_) => panic!("{}", &format!("Link parsed as playlist: {}", &link)),
+        }
+    }
+
+    #[test]
+    fn youtube_invalid() {
+        let result = parse_youtube("https://www.youtube.com");
+        match result {
+            Ok(_) => panic!("Youtube parse sShould have failed"),
+            Err(e) => {
+                match e {
+                    ParseError::YoutubeLinkInvalid(_) => (),
+                    _ => panic!("{}", &format!("Unexpected error: {}", e))
+                }
+            }
         }
     }
 }
