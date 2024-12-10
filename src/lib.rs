@@ -16,6 +16,7 @@ mod transcription;
 mod util;
 
 use std::ffi::{OsStr, OsString};
+use std::io::Bytes;
 use std::path::{Path, PathBuf};
 use crate::error::Error;
 
@@ -30,7 +31,8 @@ pub enum InputType {
 #[derive(Clone, Debug, Hash, PartialEq)]
 pub enum FileType {
     StringFile(StringFile),
-    PathFile(PathFile)
+    PathFile(PathFile),
+    BytesFile(BytesFile)
 }
 
 impl FileType {
@@ -48,6 +50,9 @@ impl FileType {
             Self::PathFile(path_file) => {
                 path_file.file_type.clone()
             },
+            Self::BytesFile(bytes_file) => {
+                bytes_file.file_type.clone()
+            }
         }
     }
 
@@ -68,6 +73,16 @@ pub struct PathFile {
     path: PathBuf,
     file_type: FileCategory
 }
+
+/// This is an actual file in the filesystem.
+#[derive(Clone, Debug, Hash, PartialEq)]
+pub struct BytesFile {
+    file_name: OsString,
+    bytes: Vec<u8>,
+    file_type: FileCategory
+}
+
+
 
 impl PathFile {
     fn new(path: PathBuf) -> Result<PathFile, Error> {

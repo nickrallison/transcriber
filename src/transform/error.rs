@@ -22,6 +22,9 @@ pub enum TransformError {
     #[error("Unsupported Operating System: {0}")]
     UnsupportedOS(String),
 
+    #[error("Unsupported File Type: {0}")]
+    FileCategory(String),
+
     #[error("{0}")]
     FromUtf8Error(#[from] std::string::FromUtf8Error),
 
