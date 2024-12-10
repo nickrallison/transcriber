@@ -4,7 +4,6 @@
 
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_crate_level_docs)]
-#![warn(rustdoc::missing_doc_code_examples)]
 
 mod parse;
 mod error;
