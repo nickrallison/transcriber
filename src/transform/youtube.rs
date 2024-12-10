@@ -68,6 +68,7 @@ pub fn transform_youtube(youtube_type: YoutubeType) -> Result<Vec<crate::FileTyp
         YoutubeType::Video(vid_id) => transform_youtube_video(vid_id)?,
         YoutubeType::Playlist(playlist_id) => transform_youtube_playlist(playlist_id)?,
         YoutubeType::Channel(channel_id) => transform_youtube_channel(channel_id)?,
+        YoutubeType::ChannelAt(channel_id) => transform_youtube_channel_at(channel_id)?,
     };
 
     Ok(files)
@@ -93,6 +94,7 @@ fn transform_youtube_video(vid_id: String) -> Result<Vec<crate::FileType>, crate
     cmd.arg("--sub-lang");
     // get english subs
     cmd.arg("en");
+
     cmd.arg(vid_id);
 
     // exectute the command
@@ -121,13 +123,145 @@ fn transform_youtube_video(vid_id: String) -> Result<Vec<crate::FileType>, crate
 /// Grabs the transcript of each video from a playlist with yt-dlp
 fn transform_youtube_playlist(playlist_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
     debug_assert!(which::which("yt-dlp").is_ok());
-    todo!()
+
+    // Get a temp directory to run the command from
+    let temp_dir = tempfile::tempdir()?;
+    let yt_dlp_exe = ytdlp_binary()?;
+    let mut cmd = std::process::Command::new(yt_dlp_exe);
+
+    // setting the run directory of the command
+    cmd.current_dir(temp_dir.path());
+
+    cmd.arg("--skip-download");
+    cmd.arg("--write-auto-sub");
+    cmd.arg("--sub-format");
+    // format subs as srt
+    cmd.arg("srt");
+    cmd.arg("--sub-lang");
+    // get english subs
+    cmd.arg("en");
+
+    let playlist_id_arg = format!("https://www.youtube.com/playlist?list={}", playlist_id);
+
+    cmd.arg(playlist_id_arg);
+
+    // exectute the command
+    let out = cmd.output()?;
+
+    if !out.status.success() {
+        return Err(crate::transform::error::TransformError::CommandError(String::from_utf8(out.stderr)?));
+    }
+
+    let srt_files = glob::glob(&format!("{}/*", temp_dir.path().to_str().unwrap())).unwrap();
+
+    let mut files: Vec<FileType> = Vec::new();
+    for file in srt_files {
+        let file_name = file.expect("Files in glob should exist");
+        let contents = std::fs::read_to_string(&file_name).expect("Files in glob should exist");
+        let string_file = StringFile {
+            file_name: file_name.file_name().expect("Should have filename").to_os_string(),
+            contents,
+            file_type: FileCategory::Srt,
+        };
+        files.push(FileType::StringFile(string_file));
+    }
+    Ok(files)
 }
 
 /// Grabs the transcript of each video from a channel with yt-dlp
 fn transform_youtube_channel(channel_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
     debug_assert!(which::which("yt-dlp").is_ok());
-    todo!()
+
+    // Get a temp directory to run the command from
+    let temp_dir = tempfile::tempdir()?;
+    let yt_dlp_exe = ytdlp_binary()?;
+    let mut cmd = std::process::Command::new(yt_dlp_exe);
+
+    // setting the run directory of the command
+    cmd.current_dir(temp_dir.path());
+
+    cmd.arg("--skip-download");
+    cmd.arg("--write-auto-sub");
+    cmd.arg("--sub-format");
+    // format subs as srt
+    cmd.arg("srt");
+    cmd.arg("--sub-lang");
+    // get english subs
+    cmd.arg("en");
+
+    let channel_id_arg = format!("https://www.youtube.com/user/{}", channel_id);
+
+    cmd.arg(channel_id_arg);
+
+    // exectute the command
+    let out = cmd.output()?;
+
+    if !out.status.success() {
+        return Err(crate::transform::error::TransformError::CommandError(String::from_utf8(out.stderr)?));
+    }
+
+    let srt_files = glob::glob(&format!("{}/*", temp_dir.path().to_str().unwrap())).unwrap();
+
+    let mut files: Vec<FileType> = Vec::new();
+    for file in srt_files {
+        let file_name = file.expect("Files in glob should exist");
+        let contents = std::fs::read_to_string(&file_name).expect("Files in glob should exist");
+        let string_file = StringFile {
+            file_name: file_name.file_name().expect("Should have filename").to_os_string(),
+            contents,
+            file_type: FileCategory::Srt,
+        };
+        files.push(FileType::StringFile(string_file));
+    }
+    Ok(files)
+}
+
+/// Grabs the transcript of each video from a channel with yt-dlp
+fn transform_youtube_channel_at(channel_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
+    debug_assert!(which::which("yt-dlp").is_ok());
+
+    // Get a temp directory to run the command from
+    let temp_dir = tempfile::tempdir()?;
+    let yt_dlp_exe = ytdlp_binary()?;
+    let mut cmd = std::process::Command::new(yt_dlp_exe);
+
+    // setting the run directory of the command
+    cmd.current_dir(temp_dir.path());
+
+    cmd.arg("--skip-download");
+    cmd.arg("--write-auto-sub");
+    cmd.arg("--sub-format");
+    // format subs as srt
+    cmd.arg("srt");
+    cmd.arg("--sub-lang");
+    // get english subs
+    cmd.arg("en");
+
+    let channel_id_arg = format!("https://www.youtube.com/@{}", channel_id);
+
+    cmd.arg(channel_id_arg);
+
+    // exectute the command
+    let out = cmd.output()?;
+
+    if !out.status.success() {
+        return Err(crate::transform::error::TransformError::CommandError(String::from_utf8(out.stderr)?));
+    }
+
+    let srt_files = glob::glob(&format!("{}/*", temp_dir.path().to_str().unwrap())).unwrap();
+
+    let mut files: Vec<FileType> = Vec::new();
+    for file in srt_files {
+        let file_name = file.expect("Files in glob should exist");
+        let contents = std::fs::read_to_string(&file_name).expect("Files in glob should exist");
+        let string_file = StringFile {
+            file_name: file_name.file_name().expect("Should have filename").to_os_string(),
+            contents,
+            file_type: FileCategory::Srt,
+        };
+        files.push(FileType::StringFile(string_file));
+    }
+    Ok(files)
 }
 
 #[cfg(test)]

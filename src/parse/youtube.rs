@@ -11,12 +11,14 @@ use crate::parse::error::ParseError;
 
 const YOUTUBE_VIDEO_URL: &str = "https://www.youtube.com/watch?v=";
 const YOUTUBE_PLAYLIST_URL: &str = "https://www.youtube.com/playlist?list=";
-const YOUTUBE_CHANNEL_URL: &str = "https://www.youtube.com/@";
+const YOUTUBE_CHANNEL_AT_URL: &str = "https://www.youtube.com/@";
+const YOUTUBE_CHANNEL_URL: &str = "https://www.youtube.com/user";
 
 lazy_static! {
     static ref YOUTUBE_VIDEO_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:watch\?v=|embed/|v/|.+\?v=)?(?P<id>[^&=%\?]*)").unwrap();
     static ref YOUTUBE_PLAYLIST_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:playlist\?list=|embed/|v/|.+\?list=)?(?P<id>[^&=%\?]*)").unwrap();
-    static ref YOUTUBE_CHANNEL_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:channel/|user/|@)?(?P<id>[^&=%\?]*)").unwrap();
+    static ref YOUTUBE_CHANNEL_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:channel/|user/)?(?P<id>[^&=%\?]*)").unwrap();
+    static ref YOUTUBE_CHANNEL_AT_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:@)?(?P<id>[^&=%\?]*)").unwrap();
 }
 
 #[derive(Clone, Debug, Hash, PartialEq)]
@@ -24,6 +26,7 @@ pub enum YoutubeType {
     Video(String),
     Playlist(String),
     Channel(String),
+    ChannelAt(String),
 }
 
 pub fn parse_youtube(input: &str) -> Result<YoutubeType, Error> {
@@ -35,6 +38,9 @@ pub fn parse_youtube(input: &str) -> Result<YoutubeType, Error> {
     }
     if input.starts_with(YOUTUBE_CHANNEL_URL) {
         return Ok(YoutubeType::Channel(extract_channel_id(input)?))
+    }
+    if input.starts_with(YOUTUBE_CHANNEL_AT_URL) {
+        return Ok(YoutubeType::ChannelAt(extract_channel_id_at(input)?))
     }
     Err(Error::from(ParseError::YoutubeLinkInvalid(input.to_string())))
 
@@ -60,6 +66,13 @@ fn extract_channel_id(url: &str) -> Result<String, Error> {
       }
 }
 
+fn extract_channel_id_at(url: &str) -> Result<String, Error> {
+    match YOUTUBE_CHANNEL_AT_REGEX.captures(url)  {
+        Some(caps) => Ok(caps["id"].to_string()),
+        None   => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
+    }
+}
+
 #[cfg(test)]
 mod parse_youtube_tests {
     use rstest::rstest;
@@ -83,6 +96,7 @@ mod parse_youtube_tests {
             YoutubeType::Video(video_id) => assert_eq!(expected_id, video_id),
             YoutubeType::Playlist(_) => panic!("{}", &format!("Link parsed as playlist: {}", &link)),
             YoutubeType::Channel(_) => panic!("{}", &format!("Link parsed as channel: {}", &link)),
+            YoutubeType::ChannelAt(_) => panic!("{}", &format!("Link parsed as channel @: {}", &link)),
         }
     }
 
@@ -101,6 +115,7 @@ mod parse_youtube_tests {
             YoutubeType::Playlist(playlist_id) => assert_eq!(expected_id, playlist_id),
             YoutubeType::Video(_) => panic!("{}", &format!("Link parsed as video: {}", &link)),
             YoutubeType::Channel(_) => panic!("{}", &format!("Link parsed as channel: {}", &link)),
+            YoutubeType::ChannelAt(_) => panic!("{}", &format!("Link parsed as channel @: {}", &link)),
         }
     }
 
@@ -109,6 +124,7 @@ mod parse_youtube_tests {
     #[case("https://www.youtube.com/@mitocw", "mitocw")]
     #[case("https://www.youtube.com/@aiexplained-official", "aiexplained-official")]
     #[case("https://www.youtube.com/@AbroadinJapan", "AbroadinJapan")]
+    #[case("https://www.youtube.com/user/TheLinuxFoundation", "TheLinuxFoundation")]
     fn youtube_channel(#[case] link: &str, #[case] expected_id: &str) {
         let result = parse_youtube(link);
         match result {
@@ -117,6 +133,7 @@ mod parse_youtube_tests {
         }
         let youtube_type = result.unwrap();
         match youtube_type {
+            YoutubeType::ChannelAt(channel_id) => assert_eq!(expected_id, channel_id),
             YoutubeType::Channel(channel_id) => assert_eq!(expected_id, channel_id),
             YoutubeType::Video(_) => panic!("{}", &format!("Link parsed as video: {}", &link)),
             YoutubeType::Playlist(_) => panic!("{}", &format!("Link parsed as playlist: {}", &link)),
