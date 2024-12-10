@@ -2,7 +2,6 @@ use crate::error::Error;
 
 use regex::Regex;
 use lazy_static::lazy_static;
-use rstest::rstest;
 use crate::parse::error::ParseError;
 
 const YOUTUBE_VIDEO_URL: &str = "https://www.youtube.com/watch?v=";
@@ -37,20 +36,20 @@ pub fn parse_youtube(input: &str) -> Result<YoutubeType, Error> {
 }
 
 fn extract_video_id(url: &str) -> Result<String, Error> {
-    match YOUTUBE_VIDEO_REGEX.captures(&url) {
+    match YOUTUBE_VIDEO_REGEX.captures(url) {
         Some(caps) => Ok(caps["id"].to_string()),
         None => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
     }
 }
 
 fn extract_playlist_id(url: &str) -> Result<String, Error> {
-    match YOUTUBE_PLAYLIST_REGEX.captures(&url) {
+    match YOUTUBE_PLAYLIST_REGEX.captures(url) {
         Some(caps) => Ok(caps["id"].to_string()),
         None  => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
      }
 }
 fn extract_channel_id(url: &str) -> Result<String, Error> {
-    match YOUTUBE_CHANNEL_REGEX.captures(&url)  {
+    match YOUTUBE_CHANNEL_REGEX.captures(url)  {
         Some(caps) => Ok(caps["id"].to_string()),
         None   => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
       }
@@ -58,6 +57,7 @@ fn extract_channel_id(url: &str) -> Result<String, Error> {
 
 #[cfg(test)]
 mod parse_youtube_tests {
+    use rstest::rstest;
     use super::*;
 
     #[rstest]

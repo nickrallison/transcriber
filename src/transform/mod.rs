@@ -29,12 +29,12 @@ fn transform_article(website_url: String) -> Result<crate::FileType, crate::tran
     // wget the site with reqwest
     let mut response = match url.scheme() {
         "http" => {
-            let mut client = reqwest::blocking::Client::new();
+            let client = reqwest::blocking::Client::new();
             client.get(website_url.as_str())
                 .send()?
         },
         "https" => {
-            let mut client = reqwest::blocking::Client::builder()
+            let client = reqwest::blocking::Client::builder()
                 .danger_accept_invalid_certs(true)
                 .build()?;
             client.get(website_url.as_str())

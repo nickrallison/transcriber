@@ -42,7 +42,7 @@ fn get_extension(path: &Path) -> Option<FileCategory> {
 
         _ => return None,
     };
-    return Some(file_type);
+    Some(file_type)
 }
 
 fn parse_file(input: &str) -> Result<FileType, Error> {
@@ -64,7 +64,7 @@ fn parse_file(input: &str) -> Result<FileType, Error> {
 
 fn parse_website(input: &str) -> Result<WebsiteType, crate::error::Error> {
 
-    if YOUTUBE_REGEX.is_match(&input) {
+    if YOUTUBE_REGEX.is_match(input) {
         Ok(WebsiteType::Youtube(youtube::parse_youtube(input)?))
     }
     else {
