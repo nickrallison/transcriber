@@ -1,4 +1,4 @@
-
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -9,4 +9,12 @@ pub enum TranscriptionError {
     // #[error("Input Parsing Error: {0}")]
     // Parse(#[from] crate::parse::error::ParseError),
 
+    #[error("Unsupported Extension Error")]
+    UnsupportedExtension,
+
+    #[error("Unsupported File Type")]
+    UnsupportedFileType,
+    
+    #[error("{0}")]
+    Io(#[from] std::io::Error)
 }
