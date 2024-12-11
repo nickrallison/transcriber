@@ -12,6 +12,9 @@ pub enum Error {
     #[error("Input Transformation Error: {0}")]
     Transform(#[from] crate::transform::error::TransformError),
 
+    #[error("Transcription Error: {0}")]
+    Transcribe(#[from] crate::transcription::error::TranscriptionError),
+    
     #[error("Input Validation Error: {0}")]
     Io(#[from] std::io::Error),
     

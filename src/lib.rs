@@ -15,10 +15,14 @@ mod transform;
 mod transcription;
 mod util;
 
+use rayon::prelude::*;
 use std::ffi::{OsStr, OsString};
 use std::io::Bytes;
 use std::path::{Path, PathBuf};
+
+
 use crate::error::Error;
+use crate::transcription::error::TranscriptionError;
 
 /// These are what we can classify any one parse into
 #[derive(Clone, Debug, Hash, PartialEq)]
@@ -119,6 +123,8 @@ pub enum WebsiteType {
 ///
 pub fn transcribe(input: &str) -> Result<String, crate::error::Error> {
     let input_type: InputType = parse::parse_input(input)?;
-    let input_as_file: Vec<FileType> = transform::transform_input(input_type)?;
+    let files: Vec<FileType> = transform::transform_input(input_type)?;
+    let transcriptions: Vec<Result<String, TranscriptionError>> = files.into_par_iter().map(|file| transcription::transcribe(file)).collect();
+    
     todo!()
 }
