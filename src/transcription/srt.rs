@@ -42,9 +42,10 @@ fn clean_srt(srt: &str) -> String {
 pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, crate::transcription::error::TranscriptionError> {
     match file.category() {
         crate::FileCategory::Srt => {
-            let filename = file.filename().to_os_string();
+            let filename = crate::get_filename(file.filename().as_ref())
+                .as_os_str()
+                .to_os_string();
             let file_contents: String = super::read_string_file(file)?;
-
             let transcribe_result = clean_srt(&file_contents);
             Ok(StringFile::new(filename, transcribe_result, FileCategory::Text))
         }
