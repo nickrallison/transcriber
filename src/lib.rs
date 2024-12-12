@@ -60,6 +60,13 @@ impl FileType {
         }
     }
 
+    fn filename(&self) -> &OsStr {
+        match self {
+            FileType::StringFile(string_file) => string_file.filename(),
+            FileType::PathFile(path_file) => path_file.filename(),
+            FileType::BytesFile(bytes_file) => bytes_file.filename()
+        }
+    }
 }
 
 /// This is a string that is pretending to be a file.
@@ -71,11 +78,40 @@ pub struct StringFile {
     file_type: FileCategory
 }
 
+impl StringFile {
+    fn new(file_name: OsString, contents: String, file_type: FileCategory) -> Self {
+        StringFile {
+            file_name,
+            contents,
+            file_type
+        }
+    }
+
+    fn category(&self) -> FileCategory {
+        (self.file_type).clone()
+    }
+
+    fn filename(&self) -> &OsStr {
+        &self.file_name
+    }
+}
+
 /// This is an actual file in the filesystem.
 #[derive(Clone, Debug, Hash, PartialEq)]
 pub struct PathFile {
     path: PathBuf,
-    file_type: FileCategory
+    file_type: FileCategory,
+    filename: OsString
+}
+
+impl PathFile {
+    fn category(&self) -> FileCategory {
+        (self.file_type).clone()
+    }
+
+    fn filename(&self) -> &OsStr {
+        &self.path.file_name().expect("Path Should have filename")
+    }
 }
 
 /// This is an actual file in the filesystem.
@@ -86,14 +122,26 @@ pub struct BytesFile {
     file_type: FileCategory
 }
 
+impl BytesFile {
+    fn category(&self) -> FileCategory {
+        (self.file_type).clone()
+    }
+
+    fn filename(&self) -> &OsStr {
+        &self.file_name
+    }
+}
+
 
 
 impl PathFile {
     fn new(path: PathBuf) -> Result<PathFile, Error> {
         let category = crate::util::get_file_type(&path)?;
+        let filename: OsString = crate::get_filename(&path).as_os_str().to_os_string();
         Ok(PathFile {
             path,
             file_type: category,
+            filename,
         })
     }
 }
@@ -121,10 +169,32 @@ pub enum WebsiteType {
 ///
 /// @param input The input to transcribe.
 ///
-pub fn transcribe(input: &str) -> Result<String, crate::error::Error> {
+pub fn transcribe(input: &str) -> Result<Vec<Result<StringFile, TranscriptionError>>, crate::error::Error> {
     let input_type: InputType = parse::parse_input(input)?;
     let files: Vec<FileType> = transform::transform_input(input_type)?;
-    let transcriptions: Vec<Result<String, TranscriptionError>> = files.into_par_iter().map(|file| transcription::transcribe(file)).collect();
-    
-    todo!()
+    let transcriptions: Vec<Result<StringFile, TranscriptionError>> = files.into_par_iter().map(|file| transcription::transcribe(file)).collect();
+    Ok(transcriptions)
+}
+
+fn get_filename(path: &Path) -> &Path {
+    let filename: &Path = Path::new(path.file_name().expect("Path should have filename"));
+    let filename = Path::file_stem(filename).expect("path should have had filename");
+    Path::new(filename)
+}
+
+#[cfg(test)]
+mod top_tests {
+    use super::*;
+
+    #[test]
+    fn test_transcribe() {
+        let input = "https://www.youtube.com/watch?v=gsbRweN-FMk";
+        let transcriptions = transcribe(input);
+        assert!(transcriptions.is_ok());
+        let transcriptions = transcriptions.unwrap();
+        for transcription in transcriptions {
+            println!("{:?}", transcription);
+        }
+        // panic!("Not Implemented")
+    }
 }

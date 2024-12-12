@@ -138,9 +138,10 @@ fn download_youtube(id: &str) -> Result<Vec<crate::FileType>, crate::transform::
     let mut files: Vec<FileType> = Vec::new();
     for file in srt_files {
         let file_name = file.expect("Files in glob should exist");
+        let filename = crate::get_filename(&file_name);
         let contents = std::fs::read_to_string(&file_name).expect("Files in glob should exist");
         let string_file = StringFile {
-            file_name: file_name.file_name().expect("Should have filename").to_os_string(),
+            file_name: filename.as_os_str().to_os_string(),
             contents,
             file_type: FileCategory::Srt,
         };

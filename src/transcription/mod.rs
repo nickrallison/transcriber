@@ -1,8 +1,12 @@
-use crate::{FileCategory, FileType};
+use crate::{FileCategory, FileType, StringFile};
 use crate::transcription::audio::transcribe_audio;
 use crate::transcription::error::TranscriptionError;
 use crate::transcription::error::TranscriptionError::UnsupportedFileType;
+use crate::transcription::html::transcribe_html;
+use crate::transcription::pdf::transcribe_pdf;
+use crate::transcription::srt::transcribe_srt;
 use crate::transcription::text::transcribe_text;
+use crate::transcription::video::transcribe_video;
 
 pub(crate) mod error;
 mod audio;
@@ -12,14 +16,14 @@ mod pdf;
 mod srt;
 mod text;
 
-pub fn transcribe(file: FileType) -> Result<String, TranscriptionError> {
+pub fn transcribe(file: FileType) -> Result<StringFile, TranscriptionError> {
     match file.category() {
         FileCategory::Audio => transcribe_audio(file),
-        FileCategory::Video => transcribe_audio(file),
-        FileCategory::Html => transcribe_audio(file),
-        FileCategory::Pdf => transcribe_audio(file),
+        FileCategory::Video => transcribe_video(file),
+        FileCategory::Html => transcribe_html(file),
+        FileCategory::Pdf => transcribe_pdf(file),
         FileCategory::Text => transcribe_text(file),
-        FileCategory::Srt => transcribe_audio(file),
+        FileCategory::Srt => transcribe_srt(file),
     }
 }
 

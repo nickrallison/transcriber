@@ -7,13 +7,12 @@ pub(crate) mod youtube;
 pub(crate) mod error;
 
 use std::ffi::OsStr;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use crate::{FileCategory, FileType, InputType, PathFile, WebsiteType};
 use crate::error::Error;
 
 use lazy_static::lazy_static;
 use regex::Regex;
-use crate::parse::error::ParseError;
 
 lazy_static! {
     static ref YOUTUBE_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)").unwrap();
@@ -52,20 +51,7 @@ fn get_extension(path: &Path) -> Option<FileCategory> {
 }
 
 fn parse_file(input: &str) -> Result<FileType, Error> {
-
-    let input_as_path = Path::new(&input);
-    let file_type = match get_extension(input_as_path) {
-        None => return Err(Error::from(ParseError::InvalidExtension(input.to_string()))),
-        Some(ext) => ext
-    };
-    let file = FileType::PathFile(
-        PathFile {
-            path: input_as_path.to_path_buf(),
-            file_type,
-        }
-    );
-    Ok(file)
-
+    Ok(FileType::PathFile(PathFile::new(PathBuf::from(input.to_string()))?))
 }
 
 fn parse_website(input: &str) -> Result<WebsiteType, crate::error::Error> {

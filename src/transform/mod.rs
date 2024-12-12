@@ -54,6 +54,7 @@ fn transform_article(website_url: &str) -> Result<crate::FileType, error::Transf
 
     let mut html = String::new();
     let filepath: PathBuf = url.path().parse()?;
+    // let filename = crate::get_filename(&filepath);
 
     let file_category = crate::util::get_file_type(&filepath);
     if file_category.is_err() {

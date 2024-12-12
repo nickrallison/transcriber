@@ -1,9 +1,9 @@
-use crate::FileType;
+use crate::{FileCategory, FileType, StringFile};
 use crate::transcription::error::TranscriptionError::UnsupportedFileType;
 
-const bad_srt_words: [&str; 2] = ["-->","</c>"];
+const BAD_SRT_WORDS: [&str; 2] = ["-->","</c>"];
 fn contains_bad_srt_words(srt_line: &str) -> bool {
-    for word in bad_srt_words.iter() {
+    for word in BAD_SRT_WORDS.iter() {
         if srt_line.contains(word) {
             return true;
         }
@@ -12,17 +12,42 @@ fn contains_bad_srt_words(srt_line: &str) -> bool {
 }
 
 fn clean_srt(srt: &str) -> String {
-    srt.lines().filter(|line| !contains_bad_srt_words(line)).collect::<Vec<&str>>().join("\n")
+    // srt.lines().filter(|line| !contains_bad_srt_words(line)).collect::<Vec<&str>>().join("\n")
+    let mut result: Vec<String> = vec![];
+    for line in srt.lines() {
+        let line = line.trim();
+        let prev_line = result.last();
+        println!("{:?}", prev_line);
+        println!("{}", line);
+
+        if !contains_bad_srt_words(line) && !line.is_empty() {
+            if let Some(prev_line) = prev_line {
+                if line != prev_line {
+                    result.push(line.to_string());
+                }
+            } else {
+                result.push(line.to_string());
+            }
+        }
+    }
+    let mut result = result.join(" ");
+    let illegal_pattern = "WEBVTT Kind: captions Language: en";
+    let len_pattern = illegal_pattern.len();
+    if result.starts_with("WEBVTT Kind: captions Language: en") {
+        result = result[len_pattern + 1..].to_string();
+    }
+    result.trim().to_string()
 }
 
-pub fn transcribe_srt(file: crate::FileType) -> Result<String, crate::transcription::error::TranscriptionError> {
+pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, crate::transcription::error::TranscriptionError> {
     match file.category() {
         crate::FileCategory::Srt => {
+            let filename = file.filename().to_os_string();
+            let file_contents: String = super::read_string_file(file)?;
 
+            let transcribe_result = clean_srt(&file_contents);
+            Ok(StringFile::new(filename, transcribe_result, FileCategory::Text))
         }
-        _ => return Err(crate::transcription::error::TranscriptionError::UnsupportedExtension)
+        _ => Err(crate::transcription::error::TranscriptionError::UnsupportedExtension)
     }
-    let file_contents: String = super::read_string_file(file)?;
-    let transcribe_result = clean_srt(&*file_contents);
-    Ok(transcribe_result)
 }
