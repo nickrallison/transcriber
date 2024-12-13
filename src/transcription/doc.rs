@@ -6,19 +6,23 @@ use crate::error::Error;
 
 pub fn transcribe_doc(file: FileType) -> Result<StringFile, Error> {
     match file.category() {
-        FileCategory::Pdf => {
-            let path_file: PathFile = match file {
-                FileType::StringFile(string_file) => return Err(Error::InvalidFileTypeTranscribe(FileCategory::Pdf, string_file.file_name)),
-                FileType::PathFile(path_file) => path_file,
-            };
-            // println!("cwd: {:?}", std::env::current_dir()?);
-            let contents = doclings(&path_file.path)?;
-            let filename = path_file.filename;
-            let file_category = FileCategory::Md;
-            Ok(StringFile::new(filename, contents, file_category))
-        }
-        _ => Err(Error::UnsupportedExtension(file.category()))
+        FileCategory::Pdf => (),
+        FileCategory::Html => (),
+        FileCategory::Image => (),
+        FileCategory::Docx => (),
+        FileCategory::Pptx => (),
+        FileCategory::Xlsx => (),
+        _ => return Err(Error::UnsupportedExtension(file.category())),
     }
+    let path_file: PathFile = match file {
+        FileType::StringFile(string_file) => return Err(Error::InvalidFileTypeTranscribe(FileCategory::Pdf, string_file.file_name)),
+        FileType::PathFile(path_file) => path_file,
+    };
+    // println!("cwd: {:?}", std::env::current_dir()?);
+    let contents = doclings(&path_file.path)?;
+    let filename = path_file.filename;
+    let file_category = FileCategory::Md;
+    Ok(StringFile::new(filename, contents, file_category))
 }
 
 fn doclings(from_pdf: &Path) -> Result<String, Error> {
