@@ -15,6 +15,9 @@ pub enum TranscriptionError {
 
     #[error("Unsupported File Type")]
     UnsupportedFileType,
+
+    #[error("PDF cannot be string file")]
+    PdfStringFile,
     
     #[error("{0}")]
     Io(#[from] std::io::Error)
