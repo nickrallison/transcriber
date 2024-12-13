@@ -37,7 +37,7 @@ fn clean_srt(srt: &str) -> String {
 
 pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, Error> {
     match file.category() {
-        crate::FileCategory::Srt => {
+        FileCategory::Srt => {
             let filename = crate::get_filename(file.filename().as_ref())
                 .as_os_str()
                 .to_os_string();
