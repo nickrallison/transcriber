@@ -5,6 +5,9 @@
 //! TODO: Add Documentation, including @param, requires and promises
 //! TODO: Add more tests
 //! TODO: Serde for tests
+//! TODO: Add output sub folder location
+//! TODO: Add Transcription Method Option (youtube either transcript or whisper)
+//! TODO: Add whisper backend config
 
 
 #![warn(missing_docs)]
@@ -227,7 +230,9 @@ mod top_tests {
 
     #[test]
     fn test_helper() {
-        let input = "https://www.youtube.com/watch?v=769VqNup21Q";
+        // let res = "[{\"file_name\":{\"Windows\":[87,104,121,32,115,104,111,117,108,100,32,121,111,117,32,108,101,97,114,110,32,84,121,112,101,32,84,104,101,111,114,121,65311,32,91,81,82,114,99,119,97,104,120,45,51,115,93]},\"contents\":\"[Music] is [Music] pilsting data one system interview I hiked just have to know that takes office and no end Jupiter and that on the glacier last basic elements constructed a little deeper [Music] nat [Music] standing ovations [Music] as an implication how could chasen works towards but what can i elements and convert element is a bit also vfb also buffer view function is [Music] [music] the construct now 20 winter will be you are you about to [music]\",\"file_type\":\"Text\"}]"
+
+        let input = "https://www.youtube.com/watch?v=QRrcwahx-3s";
         let input_type = parse::parse_input(input).unwrap();
         let files = transform::transform_input(input_type).unwrap();
         println!("filename: {:?}", files[0].filename());

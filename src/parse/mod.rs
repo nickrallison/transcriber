@@ -32,6 +32,7 @@ fn get_extension(path: &Path) -> Option<FileCategory> {
         Some("mp3") => FileCategory::Audio,
         Some("flac") => FileCategory::Audio,
         Some("m4a") => FileCategory::Audio,
+        Some("webm") => FileCategory::Audio,
 
         Some("pdf") => FileCategory::Pdf,
 

@@ -37,8 +37,8 @@ pub enum Error {
     #[error("doclings is not found on the system, see this link: https://ds4sd.github.io/docling/installation/")]
     CantFindDoclings,
 
-    #[error("Invalid extension: {0}")]
-    UnknownFileType(PathBuf),
+    #[error("{0}")]
+    Util(#[from] UtilError),
 
     #[error("{0}")]
     Io(#[from] std::io::Error),
@@ -54,7 +54,11 @@ pub enum Error {
 
     #[error("{0}")]
     SerdeDeserializable(#[from] serde_json::Error),
-    
-    
 
+}
+
+#[derive(Error, Debug, PartialEq)]
+pub enum UtilError {
+    #[error("Invalid extension: {0}")]
+    UnknownFileType(PathBuf),
 }
