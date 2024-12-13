@@ -1,5 +1,5 @@
-use crate::{FileCategory, FileType, StringFile};
-use crate::transcription::error::TranscriptionError::UnsupportedFileType;
+use crate::{FileCategory, StringFile};
+use crate::error::Error;
 
 const BAD_SRT_WORDS: [&str; 2] = ["-->","</c>"];
 fn contains_bad_srt_words(srt_line: &str) -> bool {
@@ -12,7 +12,6 @@ fn contains_bad_srt_words(srt_line: &str) -> bool {
 }
 
 fn clean_srt(srt: &str) -> String {
-    // srt.lines().filter(|line| !contains_bad_srt_words(line)).collect::<Vec<&str>>().join("\n")
     let mut result: Vec<String> = vec![];
     for line in srt.lines() {
         let line = line.trim();
@@ -36,7 +35,7 @@ fn clean_srt(srt: &str) -> String {
     result.trim().to_string()
 }
 
-pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, crate::transcription::error::TranscriptionError> {
+pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, Error> {
     match file.category() {
         crate::FileCategory::Srt => {
             let filename = crate::get_filename(file.filename().as_ref())
@@ -46,6 +45,6 @@ pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, crate::transc
             let transcribe_result = clean_srt(&file_contents);
             Ok(StringFile::new(filename, transcribe_result, FileCategory::Text))
         }
-        _ => Err(crate::transcription::error::TranscriptionError::UnsupportedExtension)
+        _ => Err(Error::UnsupportedExtension(file.category()))
     }
 }

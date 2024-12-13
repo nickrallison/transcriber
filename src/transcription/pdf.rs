@@ -1,50 +1,43 @@
-use std::ffi::{OsStr, OsString};
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use tempfile::tempdir;
 use crate::{FileCategory, FileType, PathFile, StringFile};
-use crate::transcription::error::TranscriptionError;
+use crate::error::Error;
 
-pub fn transcribe_pdf(file: FileType) -> Result<StringFile, TranscriptionError> {
+pub fn transcribe_pdf(file: FileType) -> Result<StringFile, Error> {
     match file.category() {
         FileCategory::Pdf => {
             let path_file: PathFile = match file {
-                FileType::StringFile(_) => return Err(TranscriptionError::PdfStringFile),
+                FileType::StringFile(string_file) => return Err(Error::PdfStringFile(string_file.file_name)),
                 FileType::PathFile(path_file) => path_file,
-                FileType::BytesFile(bytes_file) => {
-                    // turn into real file with temp path
-                    let mut temp_file = tempfile::NamedTempFile::new()?;
-                    temp_file.write_all(&bytes_file.bytes)?;
-                    let path_res = PathFile::new(temp_file.path().to_path_buf());
-                    match path_res {
-                        Ok(path_file) => path_file,
-                        Err(_) => return Err(TranscriptionError::PdfStringFile),
-                    }
-                }
             };
             println!("cwd: {:?}", std::env::current_dir()?);
-            let contents = doclings(&path_file.path).unwrap();
+            let contents = doclings(&path_file.path)?;
             let filename = path_file.filename;
             let file_category = FileCategory::Text;
             Ok(StringFile::new(filename, contents, file_category))
         }
-        _ => Err(TranscriptionError::UnsupportedExtension)
+        _ => Err(Error::UnsupportedExtension(file.category()))
     }
 }
 
-fn doclings(from_pdf: &Path) -> Result<String, TranscriptionError> {
-    let pdf_abs_path = from_pdf.canonicalize().unwrap();
-    let tempdir = tempdir().unwrap();
-    let cmd_path = which::which("docling").unwrap();
+fn doclings(from_pdf: &Path) -> Result<String, Error> {
+    let pdf_abs_path = from_pdf.canonicalize()?;
+    let tempdir = tempdir()?;
+    let cmd_path_result = which::which("docling");
+    let cmd_path = match cmd_path_result {
+        Ok(cmd_path) => cmd_path,
+        Err(_) => return Err(Error::CantFindDoclings)
+    };
     let mut cmd = Command::new(cmd_path);
     cmd.current_dir(tempdir.path());
     cmd.arg(pdf_abs_path);
-    cmd.status().unwrap();
+    cmd.status()?;
     // get all child files
     let mut files = vec![];
-    for entry in tempdir.path().read_dir().unwrap() {
-        let entry = entry.unwrap();
+    for entry in tempdir.path().read_dir()? {
+        let entry = entry?;
         let path = entry.path();
         println!("Path: {:?}", path);
         if path.is_file() {
@@ -52,11 +45,12 @@ fn doclings(from_pdf: &Path) -> Result<String, TranscriptionError> {
         }
     }
     if files.len() != 1 {
-        return Err(TranscriptionError::PdfStringFile);
+        return Err(Error::TooManyFilesFromPDF(files, from_pdf.display().to_string()));
     }
-    let read = std::fs::read(&files[0]).unwrap();
+    let read = std::fs::read(&files[0])?;
     let cow_string = String::from_utf8_lossy(&read);
-    Ok(cow_string.parse().unwrap())
+
+    Ok(cow_string.parse()?)
 }
 
 #[cfg(test)]

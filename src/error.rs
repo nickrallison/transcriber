@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+use std::ffi::OsString;
 use std::path::PathBuf;
 use regex::Regex;
 use thiserror::Error;
@@ -26,10 +28,25 @@ pub enum Error {
     #[error("Unsupported file type: {0}")]
     UnsupportedExtension(FileCategory),
 
+    #[error("PDF File: {0:?} cannot be a StringFile")]
+    PdfStringFile(OsString),
+
+    #[error("Too many files found: {0:?}")]
+    TooManyFilesFromPDF(Vec<PathBuf>, String),
+
+    #[error("doclings is not found on the system, see this link: https://ds4sd.github.io/docling/installation/")]
+    CantFindDoclings,
+
+    #[error("Invalid extension: {0}")]
+    UnknownFileType(PathBuf),
+
     #[error("{0}")]
     Io(#[from] std::io::Error),
 
     #[error("{0}")]
     Reqwest(#[from] reqwest::Error),
+
+    #[error("{0}")]
+    Infallable(#[from] Infallible)
 
 }
