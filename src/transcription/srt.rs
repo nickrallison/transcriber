@@ -43,7 +43,7 @@ pub fn transcribe_srt(file: crate::FileType) -> Result<StringFile, Error> {
                 .to_os_string();
             let file_contents: String = super::read_string_file(file)?;
             let transcribe_result = clean_srt(&file_contents);
-            Ok(StringFile::new(filename, transcribe_result, FileCategory::Text))
+            Ok(StringFile::new(filename, transcribe_result, FileCategory::Md))
         }
         _ => Err(Error::UnsupportedExtension(file.category()))
     }
