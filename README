@@ -3,6 +3,7 @@
 
 - Finish Main Functionality, get transcription working for all main file types
 - Add debug asserts
+- Impl Display on All Types
 - Clean tests, serialize first, dont download entire playlist for test
 - Add Docs
 - Clean API up

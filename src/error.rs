@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use regex::Regex;
 use thiserror::Error;
+use crate::FileCategory;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -13,9 +14,24 @@ pub enum Error {
     #[error("Youtube link: {0} failed to parse, this is likely because the link doesn't start with one of the following: {1:?}")]
     YoutubeLinkParse(String, &'static [&'static str]),
 
-    #[error("Input Validation Error: {0}")]
+    #[error("Url: {0} is missing a filename and cannot be downloaded")]
+    MissingFileName(String),
+
+    #[error("yd-dlp is not found on the system, see this link: https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#installation")]
+    YtdlpNotFound,
+
+    #[error("yd-dlp failed with the following error: {0}")]
+    CommandError(String),
+
+    #[error("Unsupported file type: {0}")]
+    UnsupportedExtension(FileCategory),
+
+    #[error("{0}")]
     Io(#[from] std::io::Error),
 
-    #[error("Unknown File Type: {0}")]
-    UnknownFileType(PathBuf),
+    #[error("{0}")]
+    Reqwest(#[from] reqwest::Error),
+
+    // #[error("Unknown File Type: {0}")]
+    // UnknownFileType(PathBuf),
 }

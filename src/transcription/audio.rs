@@ -1,12 +1,12 @@
 use crate::{FileCategory, FileType, StringFile};
-use crate::transcription::error::TranscriptionError;
+use crate::error::Error;
 
-pub fn transcribe_audio(file: FileType) -> Result<StringFile, TranscriptionError> {
+pub fn transcribe_audio(file: FileType) -> Result<StringFile, Error> {
     match file.category() {
         FileCategory::Audio => {
             todo!()
         }
-        _ => return Err(TranscriptionError::UnsupportedExtension)
+        _ => return Err(Error::UnsupportedExtension(file.category()))
     }
     todo!()
 }

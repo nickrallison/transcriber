@@ -3,67 +3,30 @@
 //! TODO: Add Tests to crate::transform::youtube
 //! TODO: Add Debug Asserts to crate::transform::youtube
 
-use std::fs::File;
-use std::io::Write;
 use std::path::PathBuf;
-use tempfile::tempdir;
 use crate::error::Error;
 use crate::{FileCategory, FileType, StringFile};
 use crate::parse::youtube::YoutubeType;
-use crate::transform::error::TransformError;
 
 const YTDLP_LINK_WINDOWS: &str = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
 const YTDLP_LINK_LINUX: &str = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
 const YTDLP_LINK_DARWIN: &str = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos";
 
 
-fn ytdlp_binary() -> Result<PathBuf, TransformError> {
+fn ytdlp_binary() -> Result<PathBuf, Error> {
     let which_bin = which::which("yt-dlp");
     if which_bin.is_ok() {
         return Ok(which_bin.expect("Which should have found yt-dlp"))
     }
-    // let download = ytdlp_download();
-    // if download.is_err() {
-    //     return Err(TransformError::Ytdlp("yt-dlp both failed to be found on system and failed to install".to_string()));
-    // }
-    // Ok(download.expect("yt-dlp should have been downloaded"))
-    Err(TransformError::Ytdlp("yt-dlp both failed to be found on system and failed to install".to_string()))
+    Err(Error::YtdlpNotFound)
 }
 
-fn ytdlp_download() -> Result<PathBuf, TransformError>  {
-    let tempdir = tempdir()?;
-    let os = std::env::consts::OS;
-    let download_link = match os {
-        "windows" => reqwest::blocking::get(YTDLP_LINK_WINDOWS),
-        "linux" => reqwest::blocking::get(YTDLP_LINK_LINUX),
-        "darwin" => reqwest::blocking::get(YTDLP_LINK_DARWIN),
-        _ => return Err(TransformError::UnsupportedOS(os.to_string())),
-    };
-    if download_link.is_err() {
-        return Err(TransformError::Ytdlp("yt-dlp download failed".to_string()));
-    }
-    let response = download_link.expect("yt-dlp download link should have been found");
 
-    let filename = response
-        .url()
-        .path_segments()
-        .and_then(|segments| segments.last())
-        .and_then(|name| if name.is_empty() { None } else { Some(name) })
-        .expect("should have had filename");
-
-    let filepath = tempdir.path().join(filename);
-    let mut dest = File::create(&filepath)?;
-
-    let content =  response.bytes()?;
-    dest.write_all(&content)?;
-    Ok(filepath)
-}
 
 /// Transforms YouTube enum into associated file(s)
-pub fn transform_youtube(youtube_type: YoutubeType) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
+pub fn transform_youtube(youtube_type: YoutubeType) -> Result<Vec<crate::FileType>, Error> {
     // require yt-dlp to be installed
-    which::which("yt-dlp")?;
-
+    
     let files: Vec<crate::FileType> = match youtube_type {
         YoutubeType::Video(vid_id) => transform_youtube_video(vid_id)?,
         YoutubeType::Playlist(playlist_id) => transform_youtube_playlist(playlist_id)?,
@@ -75,34 +38,34 @@ pub fn transform_youtube(youtube_type: YoutubeType) -> Result<Vec<crate::FileTyp
 }
 
 /// Grabs a YouTube video transcript with yt-dlp
-fn transform_youtube_video(vid_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
-    let files = download_youtube(&vid_id).unwrap();
+fn transform_youtube_video(vid_id: String) -> Result<Vec<crate::FileType>, Error> {
+    let files = download_youtube(&vid_id)?;
     Ok(files)
 }
 
 /// Grabs the transcript of each video from a playlist with yt-dlp
-fn transform_youtube_playlist(playlist_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
+fn transform_youtube_playlist(playlist_id: String) -> Result<Vec<crate::FileType>, Error> {
     let playlist_id_arg = format!("https://www.youtube.com/playlist?list={}", playlist_id);
-    let files = download_youtube(&playlist_id_arg).unwrap();
+    let files = download_youtube(&playlist_id_arg)?;
     Ok(files)
 }
 
 /// Grabs the transcript of each video from a channel with yt-dlp
-fn transform_youtube_channel(channel_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
+fn transform_youtube_channel(channel_id: String) -> Result<Vec<crate::FileType>, Error> {
     let channel_id_arg = format!("https://www.youtube.com/user/{}", channel_id);
-    let files = download_youtube(&channel_id_arg).unwrap();
+    let files = download_youtube(&channel_id_arg)?;
     Ok(files)
 }
 
 /// Grabs the transcript of each video from a channel with yt-dlp
-fn transform_youtube_channel_at(channel_id: String) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
+fn transform_youtube_channel_at(channel_id: String) -> Result<Vec<crate::FileType>, Error> {
 
     let channel_id_arg = format!("https://www.youtube.com/@{}", channel_id);
-    let files = download_youtube(&channel_id_arg).unwrap();
+    let files = download_youtube(&channel_id_arg)?;
     Ok(files)
 }
 
-fn download_youtube(id: &str) -> Result<Vec<crate::FileType>, crate::transform::error::TransformError> {
+fn download_youtube(id: &str) -> Result<Vec<crate::FileType>, Error> {
     debug_assert!(which::which("yt-dlp").is_ok());
 
     // Get a temp directory to run the command from
@@ -126,11 +89,12 @@ fn download_youtube(id: &str) -> Result<Vec<crate::FileType>, crate::transform::
 
     cmd.arg(id);
 
-    // exectute the command
+    // execute the command
     let out = cmd.output()?;
 
     if !out.status.success() {
-        return Err(crate::transform::error::TransformError::CommandError(String::from_utf8(out.stderr)?));
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        return Err(Error::CommandError(stderr));
     }
 
     let srt_files = glob::glob(&format!("{}/*", temp_dir.path().to_str().unwrap())).unwrap();

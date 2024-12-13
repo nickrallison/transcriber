@@ -19,6 +19,7 @@ mod util;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::ffi::{OsStr, OsString};
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
 use crate::error::Error;
@@ -150,6 +151,20 @@ pub enum FileCategory {
     Pdf,
     Text,
     Srt
+}
+
+impl Display for FileCategory {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let res = match self {
+            FileCategory::Audio => "Audio",
+            FileCategory::Video => "Video",
+            FileCategory::Html => "Html",
+            FileCategory::Pdf => "Pdf",
+            FileCategory::Text => "Text",
+            FileCategory::Srt => "Srt",
+        };
+        write!(f, "{}", res)
+    }
 }
 
 /// This is what we can classify any one website into
