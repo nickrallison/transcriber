@@ -1,11 +1,25 @@
 use std::ffi::OsStr;
 use std::path::Path;
+use regex::Regex;
 use crate::error::{Error, UtilError};
 use crate::FileCategory;
 
+lazy_static::lazy_static! {
+    static ref VALID_CHAR: Regex = Regex::new(r"^[a-zA-Z0-9\s\.\,]$").unwrap();
+}
+pub fn clean_filename(string: String) -> String {
+    let utf8_string = deunicode::deunicode(&string);
+    let mut cleaned_string = String::new();
+    for c in utf8_string.chars() {
+        if VALID_CHAR.is_match(&c.to_string()) {
+            cleaned_string.push(c);
+        }
+    }
+    cleaned_string
+}
 
 
-pub fn get_file_type(file_path: &Path) -> Result<FileCategory, UtilError> {
+pub(crate) fn get_file_type(file_path: &Path) -> Result<FileCategory, UtilError> {
     let category = match file_path.extension().and_then(OsStr::to_str) {
         Some("mp4") => FileCategory::Video,
         Some("mkv") => FileCategory::Video,

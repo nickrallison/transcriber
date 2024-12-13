@@ -6,7 +6,8 @@
 mod youtube;
 
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use crate::{FileCategory, FileType, InputType, WebsiteType};
 use crate::error::Error;
 use crate::transform::youtube::transform_youtube;
@@ -35,15 +36,16 @@ fn transform_article(website_url: &str) -> Result<crate::FileType, crate::error:
         .url()
         .path_segments()
         .and_then(|segments| segments.last())
-        .and_then(|name| if name.is_empty() { None } else { Some(name) });
+        .and_then(|name| if name.is_empty() { None } else { Some(name) })
+        .map(|str| crate::util::clean_filename(str.to_string()));
     if filename_opt.is_none() {
         return Err(Error::MissingFileName(website_url.to_string()));
     }
-    let mut filename = Path::new(filename_opt.unwrap()).to_path_buf();
+    let mut filename = PathBuf::from(filename_opt.as_ref().unwrap()).to_path_buf();
     let file_category_res = crate::util::get_file_type(&filename);
     if file_category_res.is_err() {
         // append html extenstion to filename
-        filename.set_extension("html");
+        filename = PathBuf::from(filename_opt.unwrap() + ".html").to_path_buf()
     }
     let file_category = file_category_res.unwrap_or(FileCategory::Html);
 
