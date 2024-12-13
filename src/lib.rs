@@ -21,9 +21,7 @@ use serde::{Deserialize, Serialize};
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
-
 use crate::error::Error;
-use crate::transcription::error::TranscriptionError;
 
 /// These are what we can classify any one parse into
 #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
@@ -37,7 +35,6 @@ pub enum InputType {
 pub enum FileType {
     StringFile(StringFile),
     PathFile(PathFile),
-    BytesFile(BytesFile)
 }
 
 impl FileType {
@@ -55,9 +52,6 @@ impl FileType {
             Self::PathFile(path_file) => {
                 path_file.file_type.clone()
             },
-            Self::BytesFile(bytes_file) => {
-                bytes_file.file_type.clone()
-            }
         }
     }
 
@@ -65,7 +59,6 @@ impl FileType {
         match self {
             FileType::StringFile(string_file) => string_file.filename(),
             FileType::PathFile(path_file) => path_file.filename(),
-            FileType::BytesFile(bytes_file) => bytes_file.filename()
         }
     }
 }
@@ -115,23 +108,23 @@ impl PathFile {
     }
 }
 
-/// This is an actual file in the filesystem.
-#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
-pub struct BytesFile {
-    file_name: OsString,
-    bytes: Vec<u8>,
-    file_type: FileCategory
-}
-
-impl BytesFile {
-    fn category(&self) -> FileCategory {
-        (self.file_type).clone()
-    }
-
-    fn filename(&self) -> &OsStr {
-        &self.file_name
-    }
-}
+// /// This is an actual file in the filesystem.
+// #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
+// pub struct BytesFile {
+//     file_name: OsString,
+//     bytes: Vec<u8>,
+//     file_type: FileCategory
+// }
+// 
+// impl BytesFile {
+//     fn category(&self) -> FileCategory {
+//         (self.file_type).clone()
+//     }
+// 
+//     fn filename(&self) -> &OsStr {
+//         &self.file_name
+//     }
+// }
 
 
 
@@ -170,10 +163,10 @@ pub enum WebsiteType {
 ///
 /// @param input The input to transcribe.
 ///
-pub fn transcribe(input: &str) -> Result<Vec<Result<StringFile, TranscriptionError>>, crate::error::Error> {
+pub fn transcribe(input: &str) -> Result<Vec<Result<StringFile, Error>>, crate::error::Error> {
     let input_type: InputType = parse::parse_input(input)?;
     let files: Vec<FileType> = transform::transform_input(input_type)?;
-    let transcriptions: Vec<Result<StringFile, TranscriptionError>> = files.into_par_iter().map(|file| transcription::transcribe_file(file)).collect();
+    let transcriptions: Vec<Result<StringFile, Error>> = files.into_par_iter().map(|file| transcription::transcribe_file(file)).collect();
     Ok(transcriptions)
 }
 
