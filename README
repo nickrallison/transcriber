@@ -1,13 +1,18 @@
 
 ## Todo
 
-1. Add debug asserts
-2. Clean tests, serialize first, dont download entire playlist for test
-3. Add Docs
-4. Clean API up
-5. Add command line interface
-6. Add clippy lints
-7. Fix all warnings
+- Finish Main Functionality, get transcription working for all main file types
+- Add debug asserts
+- Clean tests, serialize first, dont download entire playlist for test
+- Add Docs
+- Clean API up
+    - Mostly the transcription parts
+    - But all parts could use a touch up
+- Add command line interface
+- Add clippy lints
+- Fix all warnings
+- Wayyyy better error handling
+    - Move all errors to top level error
 
 ## Deps
 
