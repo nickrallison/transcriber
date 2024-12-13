@@ -1,4 +1,11 @@
 
+## Todo
+
+1. Add debug asserts
+2. Clean tests, serialize first, dont download entire playlist for test
+3. Add Docs
+4. Clean API up
+5. Add command line interface
 
 ## Deps
 
