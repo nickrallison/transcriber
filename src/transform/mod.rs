@@ -6,7 +6,6 @@
 mod youtube;
 
 use std::fs::File;
-use std::io::{Read, Write};
 
 use crate::{FileType, InputType, WebsiteType};
 use crate::transform::youtube::transform_youtube;
@@ -44,7 +43,7 @@ fn transform_article(website_url: &str) -> Result<crate::FileType, crate::error:
     let filepath = tempdir.join(filename);
     let mut file = File::create(&filepath)?;
     std::io::copy(&mut response, &mut file).expect("failed to copy content");
-    Ok(FileType::new_path(filepath)?)
+    FileType::new_path(filepath)
 }
 
 #[cfg(test)]
