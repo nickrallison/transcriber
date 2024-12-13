@@ -32,6 +32,4 @@ pub enum Error {
     #[error("{0}")]
     Reqwest(#[from] reqwest::Error),
 
-    // #[error("Unknown File Type: {0}")]
-    // UnknownFileType(PathBuf),
 }
