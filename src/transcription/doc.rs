@@ -11,7 +11,7 @@ pub fn transcribe_doc(file: FileType) -> Result<StringFile, Error> {
                 FileType::StringFile(string_file) => return Err(Error::InvalidFileTypeTranscribe(FileCategory::Pdf, string_file.file_name)),
                 FileType::PathFile(path_file) => path_file,
             };
-            println!("cwd: {:?}", std::env::current_dir()?);
+            // println!("cwd: {:?}", std::env::current_dir()?);
             let contents = doclings(&path_file.path)?;
             let filename = path_file.filename;
             let file_category = FileCategory::Md;
@@ -40,7 +40,7 @@ fn doclings(from_pdf: &Path) -> Result<String, Error> {
     for entry in tempdir.path().read_dir()? {
         let entry = entry?;
         let path = entry.path();
-        println!("Path: {:?}", path);
+        // println!("Path: {:?}", path);
         if path.is_file() {
             files.push(path);
         }
