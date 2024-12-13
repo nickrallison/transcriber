@@ -8,7 +8,7 @@ pub fn transcribe_pdf(file: FileType) -> Result<StringFile, Error> {
     match file.category() {
         FileCategory::Pdf => {
             let path_file: PathFile = match file {
-                FileType::StringFile(string_file) => return Err(Error::PdfStringFile(string_file.file_name)),
+                FileType::StringFile(string_file) => return Err(Error::InvalidFileTypeTranscribe(FileCategory::Pdf, string_file.file_name)),
                 FileType::PathFile(path_file) => path_file,
             };
             println!("cwd: {:?}", std::env::current_dir()?);

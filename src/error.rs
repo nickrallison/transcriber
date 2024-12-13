@@ -28,8 +28,8 @@ pub enum Error {
     #[error("Unsupported file type: {0}")]
     UnsupportedExtension(FileCategory),
 
-    #[error("PDF File: {0:?} cannot be a StringFile")]
-    PdfStringFile(OsString),
+    #[error("The {0} File: {1:?} cannot be a StringFile")]
+    InvalidFileTypeTranscribe(FileCategory, OsString),
 
     #[error("Too many files found: {0:?}")]
     TooManyFilesFromPDF(Vec<PathBuf>, String),
@@ -47,6 +47,14 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
 
     #[error("{0}")]
-    Infallable(#[from] Infallible)
+    Infallable(#[from] Infallible),
+
+    #[error("{0}")]
+    CmdNotFound(#[from] which::Error),
+
+    #[error("{0}")]
+    SerdeDeserializable(#[from] serde_json::Error),
+    
+    
 
 }

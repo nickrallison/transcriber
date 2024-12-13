@@ -146,9 +146,9 @@ mod youtube_transform_tests {
         assert_eq!(result.len(), 22);
         let vid_transcript = result.first().expect("Expected a single video");
         match vid_transcript {
-            crate::FileType::StringFile(string_file) => {
+            FileType::StringFile(string_file) => {
                 let file_type = string_file.file_type.clone();
-                assert_eq!(file_type, crate::FileCategory::Srt);
+                assert_eq!(file_type, FileCategory::Srt);
                 let contents = &string_file.contents;
                 // println!("{}", contents);
                 // assert!(contents.starts_with("WEBVTT\nKind: captions\nLanguage: en\n\n00:00:00.000 -->"));
