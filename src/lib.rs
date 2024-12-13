@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 use std::ffi::{OsStr, OsString};
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
-
+use serde_json::error::Category;
 use crate::error::Error;
 
 /// These are what we can classify any one parse into
@@ -42,6 +42,12 @@ impl FileType {
 
     fn new_path(path: PathBuf) -> Result<FileType, Error> {
         Ok(FileType::PathFile(PathFile::new(path)?))
+    }
+
+    fn new_path_with_category(path: PathBuf, file_category: FileCategory) -> Result<FileType, Error> {
+        let mut file = PathFile::new(path)?;
+        file.file_type = file_category;
+        Ok(FileType::PathFile(file))
     }
 
     /// Grabs the file type from a file path
@@ -116,12 +122,12 @@ impl PathFile {
 //     bytes: Vec<u8>,
 //     file_type: FileCategory
 // }
-// 
+//
 // impl BytesFile {
 //     fn category(&self) -> FileCategory {
 //         (self.file_type).clone()
 //     }
-// 
+//
 //     fn filename(&self) -> &OsStr {
 //         &self.file_name
 //     }
