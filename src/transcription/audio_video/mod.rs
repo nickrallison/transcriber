@@ -15,6 +15,6 @@ pub fn transcribe_av(file: FileType) -> Result<StringFile, Error> {
     }
     match file {
         FileType::StringFile(string_file) => Err(Error::InvalidFileTypeTranscribe(FileCategory::Audio, string_file.file_name)),
-        FileType::PathFile(path_file) => Ok(StringFile::new(path_file.filename, whisper_local::whisper_local(path_file.path)?, FileCategory::Text))
+        FileType::PathFile(path_file) => Ok(StringFile::new(path_file.filename, whisper_local::whisper_local(path_file.path)?, FileCategory::Md))
     }   
 }
