@@ -11,7 +11,7 @@
 #![warn(rustdoc::missing_crate_level_docs)]
 
 mod parse;
-mod error;
+pub mod error;
 mod transform;
 mod transcription;
 mod util;
@@ -136,26 +136,6 @@ impl PathFile {
     }
 }
 
-// /// This is an actual file in the filesystem.
-// #[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
-// pub struct BytesFile {
-//     file_name: OsString,
-//     bytes: Vec<u8>,
-//     file_type: FileCategory
-// }
-//
-// impl BytesFile {
-//     fn category(&self) -> FileCategory {
-//         (self.file_type).clone()
-//     }
-//
-//     fn filename(&self) -> &OsStr {
-//         &self.file_name
-//     }
-// }
-
-
-
 impl PathFile {
     fn new(path: PathBuf) -> Result<PathFile, Error> {
         let category = crate::util::get_file_type(&path)?;
@@ -247,9 +227,10 @@ mod top_tests {
 
     #[test]
     fn test_helper() {
-        let input = "https://www.youtube.com/watch?v=7yrK_9PderQ&list=WL&index=3&pp=gAQBiAQB";
+        let input = "https://www.youtube.com/watch?v=769VqNup21Q";
         let input_type = parse::parse_input(input).unwrap();
         let files = transform::transform_input(input_type).unwrap();
+        println!("filename: {:?}", files[0].filename());
         let json = serde_json::to_string(&files).unwrap();
         println!("input: {:?}", json);
         let results: Vec<StringFile> = files
@@ -258,6 +239,6 @@ mod top_tests {
             .collect();
         let json = serde_json::to_string(&results).unwrap();
         println!("res: {:?}", json);
-        // panic!();
+        panic!();
     }
 }

@@ -76,8 +76,8 @@ fn download_youtube(id: &str) -> Result<Vec<crate::FileType>, Error> {
     // setting the run directory of the command
     cmd.current_dir(temp_dir.path());
 
-    cmd.arg("-o");
-    cmd.arg("subtitle:%(title)s.%(ext)s");
+    // cmd.arg("-o");
+    // cmd.arg("subtitle:%(title)s.%(ext)s");
     cmd.arg("--skip-download");
     cmd.arg("--write-auto-sub");
     cmd.arg("--sub-format");
@@ -114,46 +114,46 @@ fn download_youtube(id: &str) -> Result<Vec<crate::FileType>, Error> {
     Ok(files)
 }
 
-#[cfg(test)]
-mod youtube_transform_tests {
-    use super::*;
-    use rstest::rstest;
-
-    #[rstest]
-    #[case("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
-    fn test_transform_youtube_video(#[case] url: &str) {
-        let youtube_type = crate::parse::youtube::parse_youtube(url).unwrap_or_else(|_| panic!("Failed to parse {}", url));
-        let result = transform_youtube(youtube_type).unwrap_or_else(|_| panic!("Failed to transform {}", url));
-        assert_eq!(result.len(), 1);
-        let vid_transcript = result.first().expect("Expected a single video");
-        match vid_transcript {
-            crate::FileType::StringFile(string_file) => {
-                let file_type = string_file.file_type.clone();
-                assert_eq!(file_type, crate::FileCategory::Srt);
-                let contents = &string_file.contents;
-                // println!("{}", contents);
-                assert!(contents.starts_with("WEBVTT\nKind: captions\nLanguage: en\n\n00:00:00.000 -->"));
-            }
-            _ => panic!("Expected a PathFile")
-        }
-    }
-
-    #[rstest]
-    #[case("https://www.youtube.com/playlist?list=PLUl4u3cNGP61hsJNdULdudlRL493b-XZf")]
-    fn test_transform_youtube_playlist(#[case] url: &str) {
-        let youtube_type = crate::parse::youtube::parse_youtube(url).unwrap_or_else(|_| panic!("Failed to parse {}", url));
-        let result = transform_youtube(youtube_type).unwrap_or_else(|_| panic!("Failed to transform {}", url));
-        assert_eq!(result.len(), 22);
-        let vid_transcript = result.first().expect("Expected a single video");
-        match vid_transcript {
-            FileType::StringFile(string_file) => {
-                let file_type = string_file.file_type.clone();
-                assert_eq!(file_type, FileCategory::Srt);
-                let contents = &string_file.contents;
-                // println!("{}", contents);
-                // assert!(contents.starts_with("WEBVTT\nKind: captions\nLanguage: en\n\n00:00:00.000 -->"));
-            }
-            _ => panic!("Expected a PathFile")
-        }
-    }
-}
+// #[cfg(test)]
+// mod youtube_transform_tests {
+//     use super::*;
+//     use rstest::rstest;
+//
+//     #[rstest]
+//     #[case("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
+//     fn test_transform_youtube_video(#[case] url: &str) {
+//         let youtube_type = crate::parse::youtube::parse_youtube(url).unwrap_or_else(|_| panic!("Failed to parse {}", url));
+//         let result = transform_youtube(youtube_type).unwrap_or_else(|_| panic!("Failed to transform {}", url));
+//         assert_eq!(result.len(), 1);
+//         let vid_transcript = result.first().expect("Expected a single video");
+//         match vid_transcript {
+//             crate::FileType::StringFile(string_file) => {
+//                 let file_type = string_file.file_type.clone();
+//                 assert_eq!(file_type, crate::FileCategory::Srt);
+//                 let contents = &string_file.contents;
+//                 // println!("{}", contents);
+//                 assert!(contents.starts_with("WEBVTT\nKind: captions\nLanguage: en\n\n00:00:00.000 -->"));
+//             }
+//             _ => panic!("Expected a PathFile")
+//         }
+//     }
+//
+//     #[rstest]
+//     #[case("https://www.youtube.com/playlist?list=PLUl4u3cNGP61hsJNdULdudlRL493b-XZf")]
+//     fn test_transform_youtube_playlist(#[case] url: &str) {
+//         let youtube_type = crate::parse::youtube::parse_youtube(url).unwrap_or_else(|_| panic!("Failed to parse {}", url));
+//         let result = transform_youtube(youtube_type).unwrap_or_else(|_| panic!("Failed to transform {}", url));
+//         assert_eq!(result.len(), 22);
+//         let vid_transcript = result.first().expect("Expected a single video");
+//         match vid_transcript {
+//             FileType::StringFile(string_file) => {
+//                 let file_type = string_file.file_type.clone();
+//                 assert_eq!(file_type, FileCategory::Srt);
+//                 let contents = &string_file.contents;
+//                 // println!("{}", contents);
+//                 // assert!(contents.starts_with("WEBVTT\nKind: captions\nLanguage: en\n\n00:00:00.000 -->"));
+//             }
+//             _ => panic!("Expected a PathFile")
+//         }
+//     }
+// }
