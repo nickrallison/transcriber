@@ -12,6 +12,8 @@ pub(crate) fn whisper_local(filepath: PathBuf) -> Result<String, Error> {
     let mut cmd = Command::new(cmd_path);
     cmd
         .current_dir(&temp_dir)
+        .arg("--language")
+        .arg("en")
         .arg("--file-name")
         .arg(filepath_abs)
         .status()?;
