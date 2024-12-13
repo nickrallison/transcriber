@@ -21,7 +21,6 @@ use serde::{Deserialize, Serialize};
 use std::ffi::{OsStr, OsString};
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
-use serde_json::error::Category;
 use crate::error::Error;
 
 /// These are what we can classify any one parse into
@@ -111,7 +110,7 @@ impl PathFile {
     }
 
     fn filename(&self) -> &OsStr {
-        &self.path.file_name().expect("Path Should have filename")
+        self.path.file_name().expect("Path Should have filename")
     }
 }
 
@@ -187,7 +186,7 @@ pub enum WebsiteType {
 pub fn transcribe(input: &str) -> Result<Vec<Result<StringFile, Error>>, crate::error::Error> {
     let input_type: InputType = parse::parse_input(input)?;
     let files: Vec<FileType> = transform::transform_input(input_type)?;
-    let transcriptions: Vec<Result<StringFile, Error>> = files.into_par_iter().map(|file| transcription::transcribe_file(file)).collect();
+    let transcriptions: Vec<Result<StringFile, Error>> = files.into_par_iter().map(transcription::transcribe_file).collect();
     Ok(transcriptions)
 }
 
@@ -199,7 +198,7 @@ fn get_filename(path: &Path) -> &Path {
 
 #[cfg(test)]
 mod top_tests {
-    use rstest::rstest;
+    
     use crate::transcription::transcribe_file;
     use super::*;
 
@@ -217,7 +216,7 @@ mod top_tests {
     #[test]
     fn test_helper() {
         let input = "https://www.youtube.com/watch?v=7yrK_9PderQ&list=WL&index=3&pp=gAQBiAQB";
-        let input_type = parse::parse_input(&input).unwrap();
+        let input_type = parse::parse_input(input).unwrap();
         let files = transform::transform_input(input_type).unwrap();
         let json = serde_json::to_string(&files).unwrap();
         println!("input: {:?}", json);

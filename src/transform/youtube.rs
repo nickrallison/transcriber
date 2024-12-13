@@ -122,8 +122,8 @@ mod youtube_transform_tests {
     #[rstest]
     #[case("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
     fn test_transform_youtube_video(#[case] url: &str) {
-        let youtube_type = crate::parse::youtube::parse_youtube(url).expect(format!("Failed to parse {}", url).as_str());
-        let result = transform_youtube(youtube_type).expect(format!("Failed to transform {}", url).as_str());
+        let youtube_type = crate::parse::youtube::parse_youtube(url).unwrap_or_else(|_| panic!("Failed to parse {}", url));
+        let result = transform_youtube(youtube_type).unwrap_or_else(|_| panic!("Failed to transform {}", url));
         assert_eq!(result.len(), 1);
         let vid_transcript = result.first().expect("Expected a single video");
         match vid_transcript {
@@ -141,8 +141,8 @@ mod youtube_transform_tests {
     #[rstest]
     #[case("https://www.youtube.com/playlist?list=PLUl4u3cNGP61hsJNdULdudlRL493b-XZf")]
     fn test_transform_youtube_playlist(#[case] url: &str) {
-        let youtube_type = crate::parse::youtube::parse_youtube(url).expect(format!("Failed to parse {}", url).as_str());
-        let result = transform_youtube(youtube_type).expect(format!("Failed to transform {}", url).as_str());
+        let youtube_type = crate::parse::youtube::parse_youtube(url).unwrap_or_else(|_| panic!("Failed to parse {}", url));
+        let result = transform_youtube(youtube_type).unwrap_or_else(|_| panic!("Failed to transform {}", url));
         assert_eq!(result.len(), 22);
         let vid_transcript = result.first().expect("Expected a single video");
         match vid_transcript {

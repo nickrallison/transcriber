@@ -34,7 +34,7 @@ fn read_string_file(file_type: FileType) -> Result<String, crate::error::Error> 
 #[cfg(test)]
 mod transcription_test {
     use rstest::rstest;
-    use crate::{transcribe, FileType, InputType, StringFile};
+    use crate::{FileType, StringFile};
     use crate::transcription::transcribe_file;
 
     #[rstest]

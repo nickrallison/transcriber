@@ -8,7 +8,7 @@ fn contains_bad_srt_words(srt_line: &str) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 
 fn clean_srt(srt: &str) -> String {

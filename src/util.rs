@@ -1,5 +1,4 @@
 use std::ffi::OsStr;
-use std::fmt::Display;
 use std::path::Path;
 use crate::error::Error;
 use crate::FileCategory;

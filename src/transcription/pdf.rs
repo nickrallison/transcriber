@@ -1,4 +1,3 @@
-use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use tempfile::tempdir;
@@ -55,7 +54,7 @@ fn doclings(from_pdf: &Path) -> Result<String, Error> {
 
 #[cfg(test)]
 mod pdf_transcribe_tests {
-    use rstest::rstest;
+    
     use crate::parse::parse_input;
     use crate::transcription::pdf::transcribe_pdf;
     use crate::transform::transform_input;
