@@ -7,6 +7,7 @@ use crate::error::Error;
 
 use regex::Regex;
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 use crate::parse::error::ParseError;
 
 const YOUTUBE_VIDEO_URL: &str = "https://www.youtube.com/watch?v=";
@@ -21,7 +22,7 @@ lazy_static! {
     static ref YOUTUBE_CHANNEL_AT_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:@)?(?P<id>[^&=%\?]*)").unwrap();
 }
 
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub enum YoutubeType {
     Video(String),
     Playlist(String),

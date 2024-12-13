@@ -4,6 +4,7 @@
 //! TODO: Add debug_asserts
 //! TODO: Add Documentation, including @param, requires and promises
 //! TODO: Add more tests
+//! TODO: Serde for tests
 
 
 #![warn(missing_docs)]
@@ -16,8 +17,8 @@ mod transcription;
 mod util;
 
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::ffi::{OsStr, OsString};
-use std::io::Bytes;
 use std::path::{Path, PathBuf};
 
 
@@ -25,14 +26,14 @@ use crate::error::Error;
 use crate::transcription::error::TranscriptionError;
 
 /// These are what we can classify any one parse into
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub enum InputType {
     Website(WebsiteType),
     File(FileType)
 }
 
 /// Either a file in the filesystem or a string and a file type.
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub enum FileType {
     StringFile(StringFile),
     PathFile(PathFile),
@@ -71,7 +72,7 @@ impl FileType {
 
 /// This is a string that is pretending to be a file.
 /// No use making a file if not necessary.
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub struct StringFile {
     file_name: OsString,
     contents: String,
@@ -97,7 +98,7 @@ impl StringFile {
 }
 
 /// This is an actual file in the filesystem.
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub struct PathFile {
     path: PathBuf,
     file_type: FileCategory,
@@ -115,7 +116,7 @@ impl PathFile {
 }
 
 /// This is an actual file in the filesystem.
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub struct BytesFile {
     file_name: OsString,
     bytes: Vec<u8>,
@@ -148,7 +149,7 @@ impl PathFile {
 
 
 /// The type of a file.
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub enum FileCategory {
     Audio,
     Video,
@@ -159,7 +160,7 @@ pub enum FileCategory {
 }
 
 /// This is what we can classify any one website into
-#[derive(Clone, Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq, Serialize, Deserialize)]
 pub enum WebsiteType {
     Youtube(parse::youtube::YoutubeType),
     Article(String)
@@ -172,7 +173,7 @@ pub enum WebsiteType {
 pub fn transcribe(input: &str) -> Result<Vec<Result<StringFile, TranscriptionError>>, crate::error::Error> {
     let input_type: InputType = parse::parse_input(input)?;
     let files: Vec<FileType> = transform::transform_input(input_type)?;
-    let transcriptions: Vec<Result<StringFile, TranscriptionError>> = files.into_par_iter().map(|file| transcription::transcribe(file)).collect();
+    let transcriptions: Vec<Result<StringFile, TranscriptionError>> = files.into_par_iter().map(|file| transcription::transcribe_file(file)).collect();
     Ok(transcriptions)
 }
 
@@ -184,6 +185,8 @@ fn get_filename(path: &Path) -> &Path {
 
 #[cfg(test)]
 mod top_tests {
+    use rstest::rstest;
+    use crate::transcription::transcribe_file;
     use super::*;
 
     #[test]
@@ -195,6 +198,21 @@ mod top_tests {
         for transcription in transcriptions {
             println!("{:?}", transcription);
         }
-        // panic!("Not Implemented")
+    }
+
+    #[test]
+    fn test_helper() {
+        let input = "https://www.youtube.com/watch?v=7yrK_9PderQ&list=WL&index=3&pp=gAQBiAQB";
+        let input_type = parse::parse_input(&input).unwrap();
+        let files = transform::transform_input(input_type).unwrap();
+        let json = serde_json::to_string(&files).unwrap();
+        println!("input: {:?}", json);
+        let results: Vec<StringFile> = files
+            .into_iter()
+            .map(|file| transcribe_file(file).unwrap())
+            .collect();
+        let json = serde_json::to_string(&results).unwrap();
+        println!("res: {:?}", json);
+        // panic!();
     }
 }

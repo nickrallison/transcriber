@@ -1476,6 +1476,8 @@ dependencies = [
  "regex",
  "reqwest",
  "rstest",
+ "serde",
+ "serde_json",
  "srtlib",
  "tempfile",
  "thiserror",

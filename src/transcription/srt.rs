@@ -17,9 +17,6 @@ fn clean_srt(srt: &str) -> String {
     for line in srt.lines() {
         let line = line.trim();
         let prev_line = result.last();
-        println!("{:?}", prev_line);
-        println!("{}", line);
-
         if !contains_bad_srt_words(line) && !line.is_empty() {
             if let Some(prev_line) = prev_line {
                 if line != prev_line {

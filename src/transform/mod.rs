@@ -67,7 +67,6 @@ fn transform_article(website_url: &str) -> Result<crate::FileType, error::Transf
             .and_then(|name| if name.is_empty() { None } else { Some(name) })
             .expect("should have had filename")
             .to_string();
-        println!("{}", filename);
         let filename: OsString = OsString::from(filename);
         let file: FileType = FileType::StringFile(
             StringFile {
