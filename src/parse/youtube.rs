@@ -8,12 +8,13 @@ use crate::error::Error;
 use regex::Regex;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use crate::parse::error::ParseError;
 
 const YOUTUBE_VIDEO_URL: &str = "https://www.youtube.com/watch?v=";
 const YOUTUBE_PLAYLIST_URL: &str = "https://www.youtube.com/playlist?list=";
 const YOUTUBE_CHANNEL_AT_URL: &str = "https://www.youtube.com/@";
 const YOUTUBE_CHANNEL_URL: &str = "https://www.youtube.com/user";
+
+const YOUTUBE_PREFIXES: [&str; 4] = [YOUTUBE_VIDEO_URL, YOUTUBE_PLAYLIST_URL, YOUTUBE_CHANNEL_AT_URL, YOUTUBE_CHANNEL_URL];
 
 lazy_static! {
     static ref YOUTUBE_VIDEO_REGEX: Regex = Regex::new(r"(?:https?://)?(?:www\.)?(?:youtube|youtu|youtube-nocookie)\.(?:com|be)/(?:watch\?v=|embed/|v/|.+\?v=)?(?P<id>[^&=%\?]*)").unwrap();
@@ -43,34 +44,34 @@ pub fn parse_youtube(input: &str) -> Result<YoutubeType, Error> {
     if input.starts_with(YOUTUBE_CHANNEL_AT_URL) {
         return Ok(YoutubeType::ChannelAt(extract_channel_id_at(input)?))
     }
-    Err(Error::from(ParseError::YoutubeLinkInvalid(input.to_string())))
+    Err(Error::YoutubeLinkParse(input.to_string(), &YOUTUBE_PREFIXES))
 
 }
 
 fn extract_video_id(url: &str) -> Result<String, Error> {
     match YOUTUBE_VIDEO_REGEX.captures(url) {
         Some(caps) => Ok(caps["id"].to_string()),
-        None => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
+        None => Err(Error::YoutubeRegex(YOUTUBE_VIDEO_REGEX.clone(), "video".to_string(), url.to_string()))
     }
 }
 
 fn extract_playlist_id(url: &str) -> Result<String, Error> {
     match YOUTUBE_PLAYLIST_REGEX.captures(url) {
         Some(caps) => Ok(caps["id"].to_string()),
-        None  => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
+        None  => Err(Error::YoutubeRegex(YOUTUBE_PLAYLIST_REGEX.clone(), "playlist".to_string(), url.to_string()))
      }
 }
 fn extract_channel_id(url: &str) -> Result<String, Error> {
     match YOUTUBE_CHANNEL_REGEX.captures(url)  {
         Some(caps) => Ok(caps["id"].to_string()),
-        None   => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
+        None   => Err(Error::YoutubeRegex(YOUTUBE_CHANNEL_REGEX.clone(), "channel".to_string(), url.to_string()))
       }
 }
 
 fn extract_channel_id_at(url: &str) -> Result<String, Error> {
     match YOUTUBE_CHANNEL_AT_REGEX.captures(url)  {
         Some(caps) => Ok(caps["id"].to_string()),
-        None   => Err(Error::from(ParseError::YoutubeRegexFail(url.to_string())))
+        None   => Err(Error::YoutubeRegex(YOUTUBE_CHANNEL_AT_REGEX.clone(), "channel".to_string(), url.to_string()))
     }
 }
 
@@ -148,7 +149,7 @@ mod parse_youtube_tests {
             Ok(_) => panic!("Youtube parse sShould have failed"),
             Err(e) => {
                 match e {
-                    Error::Parse(ParseError::YoutubeLinkInvalid(_)) => (),
+                    Error::YoutubeLinkParse(_, _) => (),
                     _ => panic!("{}", &format!("Unexpected error: {}", e))
                 }
             }

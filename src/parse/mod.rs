@@ -4,8 +4,6 @@
 //! TODO: Add Debug Asserts to crate::parse
 
 pub(crate) mod youtube;
-pub(crate) mod error;
-
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use crate::{FileCategory, FileType, InputType, PathFile, WebsiteType};
