@@ -23,28 +23,6 @@ pub(crate) fn whisper_local(filepath: PathBuf) -> Result<String, Error> {
     Ok(result.text)
 }
 
-// {
-//     "speakers": [],
-//     "chunks": [
-//         {
-//             "timestamp": [
-//                 0.0,
-//                 307.16
-//             ],
-//             "text": " you you you you you you you you you you you you you you Hey everyone."
-//         },
-//         ...
-//         {
-//             "timestamp": [
-//                 2457.0,
-//                 2460.02
-//             ],
-//             "text": " I will see you all later then."
-//         }
-//     ],
-//     "text": " you you you you you you you you you you you you you you Hey everyone..."
-// }
-
 #[derive(Serialize, Deserialize)]
 struct WhisperLocalResponse {
     speakers: Vec<String>,
