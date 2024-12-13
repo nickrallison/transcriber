@@ -1,13 +1,11 @@
 use crate::{FileCategory, FileType, StringFile};
 use crate::transcription::audio_video::transcribe_av;
-use crate::transcription::html::transcribe_html;
-use crate::transcription::pdf::transcribe_pdf;
+use crate::transcription::doc::transcribe_doc;
 use crate::transcription::srt::transcribe_srt;
 use crate::transcription::text::transcribe_text;
 
 mod audio_video;
-mod html;
-mod pdf;
+mod doc;
 mod srt;
 mod text;
 
@@ -15,9 +13,17 @@ pub fn transcribe_file(file: FileType) -> Result<StringFile, crate::error::Error
     match file.category() {
         FileCategory::Audio => transcribe_av(file),
         FileCategory::Video => transcribe_av(file),
-        FileCategory::Html => transcribe_html(file),
-        FileCategory::Pdf => transcribe_pdf(file),
+        
+        FileCategory::Html => transcribe_doc(file),
+        FileCategory::Pdf => transcribe_doc(file),
+        FileCategory::Image => transcribe_doc(file),
+        FileCategory::Docx => transcribe_doc(file),
+        FileCategory::Pptx => transcribe_doc(file),
+        FileCategory::Xlsx => transcribe_doc(file),
+        FileCategory::Md => transcribe_doc(file),
+        
         FileCategory::Text => transcribe_text(file),
+        
         FileCategory::Srt => transcribe_srt(file),
     }
 }

@@ -4,7 +4,7 @@ use tempfile::tempdir;
 use crate::{FileCategory, FileType, PathFile, StringFile};
 use crate::error::Error;
 
-pub fn transcribe_pdf(file: FileType) -> Result<StringFile, Error> {
+pub fn transcribe_doc(file: FileType) -> Result<StringFile, Error> {
     match file.category() {
         FileCategory::Pdf => {
             let path_file: PathFile = match file {
@@ -14,7 +14,7 @@ pub fn transcribe_pdf(file: FileType) -> Result<StringFile, Error> {
             println!("cwd: {:?}", std::env::current_dir()?);
             let contents = doclings(&path_file.path)?;
             let filename = path_file.filename;
-            let file_category = FileCategory::Text;
+            let file_category = FileCategory::Md;
             Ok(StringFile::new(filename, contents, file_category))
         }
         _ => Err(Error::UnsupportedExtension(file.category()))
@@ -31,6 +31,8 @@ fn doclings(from_pdf: &Path) -> Result<String, Error> {
     };
     let mut cmd = Command::new(cmd_path);
     cmd.current_dir(tempdir.path());
+    cmd.arg("--to");
+    cmd.arg("md");
     cmd.arg(pdf_abs_path);
     cmd.status()?;
     // get all child files
@@ -56,7 +58,7 @@ fn doclings(from_pdf: &Path) -> Result<String, Error> {
 mod pdf_transcribe_tests {
     
     use crate::parse::parse_input;
-    use crate::transcription::pdf::transcribe_pdf;
+    use crate::transcription::doc::transcribe_doc;
     use crate::transform::transform_input;
 
     #[test]
@@ -66,7 +68,7 @@ mod pdf_transcribe_tests {
         let transformed = transform_input(input_file).unwrap();
         assert_eq!(transformed.len(), 1);
         let transformed = transformed[0].clone();
-        let result = transcribe_pdf(transformed).unwrap();
+        let result = transcribe_doc(transformed).unwrap();
         let expected = std::fs::read_to_string("tests/VeriCoq A Verilog to Coq converter for proof carrying hardware automation.md").unwrap();
         assert_eq!(result.contents, expected);
     }

@@ -87,12 +87,34 @@ impl StringFile {
         }
     }
 
-    fn category(&self) -> FileCategory {
+    pub fn category(&self) -> FileCategory {
         (self.file_type).clone()
     }
 
-    fn filename(&self) -> &OsStr {
+    pub fn filename(&self) -> &OsStr {
         &self.file_name
+    }
+    pub fn contents(&self) -> &str {
+        &self.contents
+    }
+    pub fn filename_with_extension(&self) -> OsString {
+        let mut filename = self.filename().to_os_string();
+        let ext: &str = match self.category() {
+            FileCategory::Audio => "mp3",
+            FileCategory::Video => "mkv",
+            FileCategory::Html => "html",
+            FileCategory::Pdf => "pdf",
+            FileCategory::Text => "txt",
+            FileCategory::Srt => "vtt",
+            FileCategory::Image => panic!("Have not yet handeled image files for this function: filename_with_extension"),
+            FileCategory::Docx => "docx",
+            FileCategory::Pptx => "pptx",
+            FileCategory::Xlsx => "xlsx",
+            FileCategory::Md => "md"
+        };
+        filename.push(".");
+        filename.push(ext);
+        filename
     }
 }
 
@@ -155,7 +177,12 @@ pub enum FileCategory {
     Html,
     Pdf,
     Text,
-    Srt
+    Srt,
+    Image,
+    Docx,
+    Pptx,
+    Xlsx,
+    Md
 }
 
 impl Display for FileCategory {
@@ -167,6 +194,11 @@ impl Display for FileCategory {
             FileCategory::Pdf => "Pdf",
             FileCategory::Text => "Text",
             FileCategory::Srt => "Srt",
+            FileCategory::Image => "Image",
+            FileCategory::Docx => "Docx",
+            FileCategory::Pptx => "Pptx",
+            FileCategory::Xlsx => "Xlsx",
+            FileCategory::Md => "Md",
         };
         write!(f, "{}", res)
     }
